@@ -25,3 +25,5 @@ dist-ssr
 backend/autosave.v2
 backend/Dinney2004_01_01.v2
 backend/siiiey1918_01_11.v2
+*.v2
+*.csv
