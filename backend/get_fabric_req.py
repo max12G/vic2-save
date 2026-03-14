@@ -1,11 +1,12 @@
-import pyradox
-
+from pyradox import txt as pyradox_txt
+from pyradox.datatype import time as pyradox_time
+import os
 
 def parse_victoria2_file(file_path):
     try:
         with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
             content = f.read()
-        data = pyradox.txt.parse(content)
+        data = pyradox_txt.parse(content)
         return data
         
     except Exception as e:
@@ -13,9 +14,9 @@ def parse_victoria2_file(file_path):
         return None
     
 
-data = parse_victoria2_file("production_types.txt")
+_here = os.path.dirname(os.path.abspath(__file__))
+data = parse_victoria2_file(os.path.join(_here, "data", "production_types.txt"))
 factories = [k for k in data.keys() if data[k]["input_goods"] != None]
-
 def get_factory_info(factory):
     input_goods = factory["input_goods"]
     inp = {}

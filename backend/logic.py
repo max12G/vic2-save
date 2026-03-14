@@ -1,4 +1,5 @@
-import pyradox
+from pyradox import txt as pyradox_txt
+from pyradox.datatype import time as pyradox_time
 import sys
 import re
 import pandas as pd
@@ -19,13 +20,13 @@ def get_needs_goods(data):
 
 def get_weights():
     weigshts = {}
-    saves_dir = "poptypes/" 
+    saves_dir = "backend\data\poptypes" 
     for file in os.listdir(saves_dir):
         if file.endswith(".txt"):
             with open(os.path.join(saves_dir, file), "r", encoding="windows-1252", errors="ignore") as f:
                 pop = file.replace(".txt", "")
                 content = f.read()
-                data = pyradox.txt.parse(content)
+                data = pyradox_txt.parse(content)
                 weigshts[pop] = {}
                 weigshts[pop]["base"] = get_needs_goods(data["life_needs"])
                 weigshts[pop]["everyday"] = get_needs_goods(data["everyday_needs"])
@@ -364,7 +365,6 @@ def get_fab_efficiency(tag):
             count += 1
     return count
 
-
 def get_Consumption_economy(tag):
     
     if tag not in data:
@@ -597,6 +597,8 @@ def get_economy_demand_podrobno(tag):
             province = data[provid]
             for pop in province.find_all("artisans"):
                 needs = pop["need"]
+                if needs is None: 
+                    continue
                 goods = ['cotton', 'machine_parts', 'timber', 'fabric', 'grain', \
                        'cement', 'fish', 'furniture', 'steamer_convoy', 'tobacco', 'luxury_clothes',\
                         'regular_clothes', 'luxury_furniture', 'automobiles', \
@@ -947,14 +949,12 @@ if __name__ == "__main__":
             
             content = re.sub(r'(bank=-?\d+\.\d+)\d{2}\.\d+', r'\1', content)
             
-            data = pyradox.txt.parse(content)
+            data = pyradox_txt.parse(content)
             return data
             
         except Exception as e:
             print(f"Ошибка при парсинге: {e}")
             return None
         
-    data = parse_victoria2_save("siiiey1918_01_11.v2")
+    data = parse_victoria2_save("backend\data\siiiey1918_01_11.v2")
     world_goods_price = data["worldmarket"]["price_pool"]
-    print(sum_vals(get_economy_producing_podrobno("JAP")[1]))
-    print(getSupply("JAP"))

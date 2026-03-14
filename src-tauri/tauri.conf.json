@@ -34,3 +34,13 @@
     ]
   }
 }
+
+{
+  "bundle": {
+    "externalBin": ["../backend/server"]
+  },
+  "allowlist": {
+    "shell": { "sidecar": true },
+    "dialog": { "open": true }
+  }
+}

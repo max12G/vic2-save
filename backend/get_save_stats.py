@@ -22,7 +22,7 @@ def parse_victoria2_save(file_path):
         print(f"Ошибка при парсинге: {e}")
         return None
     
-data = parse_victoria2_save("aaaaaaaagjkoncij-BHU-1936-9-20.v2")
+data = parse_victoria2_save("backend\data\siiiey1918_01_11.v2")
 world_goods_price = data["worldmarket"]["price_pool"]
 
 
