@@ -1,0 +1,960 @@
+import pyradox
+import sys
+import re
+import pandas as pd
+import time
+import tqdm
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from get_fabric_req import stats
+
+def get_needs_goods(data):
+    goods = {}
+    if data is None:
+        return goods
+    for good in data:
+        goods[good] = data[good]
+    return goods
+
+def get_weights():
+    weigshts = {}
+    saves_dir = "poptypes/" 
+    for file in os.listdir(saves_dir):
+        if file.endswith(".txt"):
+            with open(os.path.join(saves_dir, file), "r", encoding="windows-1252", errors="ignore") as f:
+                pop = file.replace(".txt", "")
+                content = f.read()
+                data = pyradox.txt.parse(content)
+                weigshts[pop] = {}
+                weigshts[pop]["base"] = get_needs_goods(data["life_needs"])
+                weigshts[pop]["everyday"] = get_needs_goods(data["everyday_needs"])
+                weigshts[pop]["luxury"] = get_needs_goods(data["luxury_needs"])
+    return weigshts
+
+weights = get_weights()
+data = {}
+world_goods_price = {}
+
+
+def get_subside_cost(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    subside = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            if building["subsidised"]:
+                income = building["last_income"]
+                spend = building["last_spending"]
+                wages = building["pops_paychecks"]
+                subs = max(0, spend + wages - income)
+                subside += subs
+
+    return round(subside / 1000, 3)
+
+def get_subside_ind(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    subside_c = 0
+    all_fab = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            income = building["last_income"]
+            spend = building["last_spending"]
+            wages = building["pops_paychecks"]
+            subs = spend + wages - income
+            if building["subsidised"] and subs > 0:
+                subside_c += 1
+            all_fab += 1
+    if all_fab == 0:
+        return 0 
+    return round(subside_c / all_fab * 100, 2)
+
+def get_avg_income_per_fab(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    all_income = 0
+    fab = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            income = building["last_income"]
+            cost = building["last_spending"]
+            if income == 0 and cost == 0:
+                continue
+            all_income += (income - cost)
+            fab += 1
+    if fab == 0:
+        return 0
+    return round(all_income / fab / 1000, 3)
+
+def get_gold_mining(tag):
+    
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    gold = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "rgo" in province:
+                for rgo in list(province.find_all("rgo")):
+                    last_income = rgo["last_income"]
+                    if rgo["goods_type"] != "precious_metal":
+                        last_income = 0
+                    gold += last_income / 1000
+    return int(gold)
+
+def get_gdp_per_reg(tag):
+    
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    gdp_per_reg = {}
+    for state in states:
+        gdp = 0
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "rgo" in province:
+                for rgo in list(province.find_all("rgo")):
+                    last_income = rgo["last_income"]
+                    if rgo["goods_type"] == "precious_metal":
+                        last_income = 0
+                    gdp += last_income / 1000
+            if "artisans" in province:
+                for pop in province.find_all("artisans"):
+                    income = pop["production_income"]
+                    cost = pop["needs_cost"]
+                    gdp += max(0, income - cost) / 1000
+        for building in state.find_all("state_buildings"):
+            income = building["last_income"]
+            cost = building["last_spending"]
+            gdp += max(0, (income - cost) / 1000)
+        gdp_per_reg[state["id"]["id"]] = int(gdp)
+    gdp_per_reg = dict(sorted(gdp_per_reg.items(), key=lambda x: x[1], reverse=True))
+    return gdp_per_reg
+
+def get_concentrate_economy(tag):
+    if tag not in data:
+        return 0
+    states = list(data[tag].find_all("state"))
+    top = min(len(states), 4)
+    slov = get_gdp_per_reg(tag)
+    vals = list(slov.values())
+    gdp = getGDP(tag)
+    if gdp == 0:
+        return 0
+    return min(round(sum(vals[:top + 1]) / gdp, 3), 1)
+
+def get_employed_fabric(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    pop = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            for employee in building["employment"].find_all("employees"):
+                pop += employee["count"]
+
+    return pop
+
+def get_rgo_employed(tag):
+    
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    pop = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "rgo" in province:
+                for employee in province["rgo"]["employment"].find_all("employees"):
+                    pop += employee["count"]
+    return pop
+
+def getSupply(tag):
+    
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    Supply = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "rgo" in province:
+                for last_income in list(province["rgo"].find_all("last_income")):
+                    Supply += last_income / 1000
+            if "artisans" in province:
+                for pop in province.find_all("artisans"):
+                    Supply += pop["production_income"] / 1000
+        
+        for building in state.find_all("state_buildings"):
+            Supply += building["last_income"] / 1000
+
+
+
+    return int(Supply + goverement_gdp(tag))
+
+def industirialGDP(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    GDP = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            income = building["last_income"]
+            cost = building["last_spending"]
+            pay = building["pops_paychecks"]
+            GDP += max(0, (income - cost + pay) / 1000)
+
+    return int(GDP)
+
+def GDP_selo(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    GDP = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "rgo" in province:
+                for rgo in list(province.find_all("rgo")):
+                    last_income = rgo["last_income"]
+                    if rgo["goods_type"] == "precious_metal":
+                        last_income = 0
+                    GDP += last_income / 1000
+            if "artisans" in province:
+                for pop in province.find_all("artisans"):
+                    income = pop["production_income"]
+                    cost = pop["needs_cost"]
+                    GDP += max(0, income - cost) / 1000
+    return int(GDP)
+        
+def goverement_gdp(tag):
+    if tag not in data:
+        return 0
+    mil = data[tag]["military_spending"]["maxValue"] / 1000
+    edu = data[tag]["education_spending"]["maxValue"] / 1000
+    soc = data[tag]["social_spending"]["maxValue"] / 1000
+    adm = data[tag]["crime_fighting"]["maxValue"] / 1000
+    army = get_army_budget(tag)
+    nav = get_naval_budget(tag)
+    return mil + edu + soc + adm + army + nav
+
+def getGDP(tag):
+    return int(industirialGDP(tag) + GDP_selo(tag))
+
+def indPower(tag):
+    
+    if tag not in data:
+        return 0
+    gdp = getGDP(tag)
+    if gdp == 0:
+        return 0
+    return round(industirialGDP(tag) / gdp, 2)
+
+def get_population(tag):
+    
+    if tag not in data:
+        return 0
+    
+    
+    pop_types = [
+        'farmers', 'labourers', 'artisans', 'clergymen', 
+        'clerks', 'bureaucrats', 'soldiers', 'officers', 
+        'aristocrats', 'capitalists', 'slaves', 'serfs', 'craftsmen'
+    ]
+    
+    States = data[tag].find_all("state")
+    all_population = 0
+    for state in States:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop_type in pop_types:
+                all_pops = province.find_all(pop_type)
+                for pop in all_pops:
+                    all_population += pop["size"]
+    return all_population * 4
+
+def get_literacy(tag):
+    
+    if tag not in data:
+        return 0
+    
+    
+    pop_types = [
+        'farmers', 'labourers', 'artisans', 'clergymen', 
+        'clerks', 'bureaucrats', 'soldiers', 'officers', 
+        'aristocrats', 'capitalists', 'slaves', 'serfs', 'craftsmen'
+    ]
+    
+    States = data[tag].find_all("state")
+    lit = 0
+    for state in States:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop_type in pop_types:
+                all_pops = province.find_all(pop_type)
+                for pop in all_pops:
+                    lit += pop["literacy"] * pop["size"]
+    if lit == 0:
+        return 0
+    return round(lit / get_population(tag) * 400, 2)
+
+def get_literacy_metropolian(tag):
+    if tag not in data:
+        return 0
+    
+    pop_types = [
+        'farmers', 'labourers', 'artisans', 'clergymen', 
+        'clerks', 'bureaucrats', 'soldiers', 'officers', 
+        'aristocrats', 'capitalists', 'slaves', 'serfs', 'craftsmen'
+    ]
+    
+    States = data[tag].find_all("state")
+    lit = 0
+    for state in States:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop_type in pop_types:
+                all_pops = province.find_all(pop_type)
+                for pop in all_pops:
+                    lit += pop["literacy"] * pop["size"]
+    if lit == 0:
+        return 0
+    return round(lit / get_population(tag) * 400, 2)
+    
+def get_GDP_per_capita(tag):
+    gdp = getGDP(tag)
+    population = get_population(tag)
+    if population == 0:
+        return 0
+    return round(gdp / population * 100000, 3)
+
+def get_fab_efficiency(tag):
+    if tag not in data:
+        return 0
+    all_naval_techs = [
+    "post_nelsonian_thought", "naval_professionalism", "naval_decision_making",
+    "naval_risk_management", "naval_staff_system", "naval_plans",
+    "clipper_design", "steamers", "iron_steamers", "steel_steamers",
+    "steam_turbine_ships", "oil_driven_ships", "fire_control_systems",
+    "weapon_platforms", "main_armament", "advanced_naval_ordnance",
+    "long_range_fire_control", "heavy_armament", "naval_design_bureaus",
+    "advanced_naval_design", "modern_naval_design", "naval_engineering",
+    "naval_architecture", "dreadnought_design", "alphabetic_flag_signaling",
+    "the_command_principle", "naval_logistics", "naval_intelligence",
+    "naval_communications", "naval_coordination"
+    ]
+    country = data[tag]
+    techs = country["technology"]
+    count = 0
+    for tech in techs:
+        if tech in all_naval_techs:
+            count += 1
+    return count
+
+
+def get_Consumption_economy(tag):
+    
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    Consumption = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "artisans" in province:
+                for pop in province.find_all("artisans"):
+                    cost = pop["needs_cost"]
+                    Consumption += cost / 1000
+        
+        for building in state.find_all("state_buildings"):
+            cost = building["last_spending"]
+            Consumption += cost / 1000
+
+    return int(Consumption)
+
+def get_all_pop_money(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    pop_types = [
+        'farmers', 'labourers', 'artisans', 'clergymen', 
+        'clerks', 'bureaucrats', 'soldiers', 'officers', 
+        'aristocrats', 'capitalists', 'slaves', 'serfs', 'craftsmen'
+    ]
+    all_money = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop in pop_types:
+                for popul in province.find_all(pop):
+                    money = popul["money"]
+                    if money is None:
+                        money = 0
+                    all_money += money / 1000
+        
+    return int(all_money)
+
+def get_money_activity(tag):
+    
+    gdp = getGDP(tag)
+    all_money = get_money_mass(tag)
+    if all_money == 0:
+        return 0
+    return round(gdp / all_money * 100, 3)
+
+def getAvgRich(tag):
+    pop_types = ['aristocrats', 'capitalists']
+    States = data[tag].find_all("state")
+    all_population = 0
+    for state in States:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop_type in pop_types:
+                all_pops = province.find_all(pop_type)
+                for pop in all_pops:
+                    all_population += pop["size"]
+    return all_population * 4
+
+def getlifecost():
+    base_cost = 0.1 * world_goods_price["wool"] + 0.1 * world_goods_price["fish"] + 0.1 * world_goods_price["fruit"] + 0.1 * world_goods_price["cattle"] + 0.4 * world_goods_price["grain"]
+    base_cost /= 1000
+    mid_cost = 0.03 * world_goods_price["coal"] + 0.03 * world_goods_price["glass"] + 0.16 * world_goods_price["paper"] + 0.1 * world_goods_price["tobacco"] + 0.16 * world_goods_price["tea"] +\
+    0.16 * world_goods_price["liquor"] + 0.16 * world_goods_price["regular_clothes"] + 0.13 * world_goods_price["furniture"]
+    mid_cost /= 1000
+    if "aeroplanes" not in world_goods_price:
+        world_goods_price["aeroplanes"] = 0
+    if "fuel" not in world_goods_price:
+        world_goods_price["fuel"] = 0
+    if "automobiles" not in world_goods_price:
+        world_goods_price["automobiles"] = 0
+    if "telephones" not in world_goods_price:
+        world_goods_price["telephones"] = 0
+    if "radio" not in world_goods_price:
+        world_goods_price["radio"] = 0
+    luxury_cost = 0.01 * world_goods_price["aeroplanes"] + 0.01 * world_goods_price["fuel"] + 0.06 * world_goods_price["coffee"] + 0.03 * world_goods_price["opium"] + \
+    0.03 * world_goods_price["automobiles"] + 0.04 * world_goods_price["telephones"] + 0.32 * world_goods_price["wine"] + 0.03 * world_goods_price["luxury_clothes"] + \
+    0.03 * world_goods_price["radio"] + 0.03 * world_goods_price["luxury_furniture"]
+    luxury_cost /= 1000
+    return round(base_cost, 6), round(mid_cost, 6), round(luxury_cost, 6)
+
+def getpopsize(pop, tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    total_population = 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for popul in province.find_all(pop):
+                population = popul["size"]
+                total_population += population
+
+    return total_population
+
+def avgpopspending(pop, tag):
+    if tag not in data:
+        return 0
+    base_cost, mid_cost, luxury_cost = getlifecost()
+    states = data[tag].find_all("state")
+    total_spending = 0
+    total_population = getpopsize(pop, tag)
+    if total_population == 0:
+        return 0
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for popul in province.find_all(pop):
+                if "life_needs" not in popul:
+                    base = 1
+                else: base = popul["life_needs"]
+                if "everyday_needs" not in popul:
+                    mid = 1
+                else: mid = popul["everyday_needs"]
+                if "luxury_needs" not in popul:
+                    luxury = 1
+                else: luxury = popul["luxury_needs"]
+                if pop == "slaves":
+                    mid = 0
+                    luxury = 0
+                population = popul["size"]
+                total_spending += (population * base * base_cost) + (population * mid * mid_cost) + (population * luxury * luxury_cost)
+
+    return round(total_spending / total_population * 1000, 2)
+
+def fabric_uneployement(tag):
+    all_empl = getpopsize("craftsmen", tag) + getpopsize("clerks", tag)
+    if all_empl == 0:
+        return 0
+    return round((all_empl - get_employed_fabric(tag)) /\
+                  all_empl * 100, 2)
+
+def rgo_uneployement(tag):
+    return max(0, round((getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag) - get_rgo_employed(tag)) /\
+                 (getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag)) * 100, 2))
+
+def get_fabric_salary_spendings(tag):
+    
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    salary = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            sal = building["pops_paychecks"]
+            salary += sal * 10
+
+    return salary
+
+def get_all_employed(tag):
+    return get_employed_fabric(tag) + get_rgo_employed(tag)
+
+def get_avg_salary(tag):
+    fabric_employee = get_employed_fabric(tag)
+    if fabric_employee == 0: return 0
+    return round(get_fabric_salary_spendings(tag) / fabric_employee / 2, 3)
+
+def get_avg_capilatils_salary(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    salary = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            sal = building["pops_paychecks"]
+            salary += sal * 10 + (building["last_income"] - building["last_spending"]) / 100
+
+    return round(salary / getpopsize("capitalists", tag) if getpopsize("capitalists", tag) > 0 else 0, 1)
+    
+def get_economy_producing_podrobno(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    good_produce = {}
+    goods_pricing = {}
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            if "rgo" in province:
+                good = province["rgo"]["goods_type"]
+                good_produce[good] = good_produce.get(good, 0) + (province["rgo"]["last_income"] / world_goods_price[good] / 1000)
+                goods_pricing[good] = goods_pricing.get(good, 0) + (province["rgo"]["last_income"] / 1000)
+            if "artisans" in province:
+                for pop in province.find_all("artisans"):
+                    tot = 0
+                    type_p = pop["production_type"]
+                    if type_p is None:
+                        continue
+                    good = type_p.replace("artisan_", "")
+                    if good == "winery": good = "wine"
+                    if good == "steamer": good = "steamer_convoy"
+                    if good == "clipper": good = "clipper_convoy"
+                    if good == "automobile": good = "automobiles"
+                    if good == "aeroplane": good = "aeroplanes"
+                    if good == "telephone": good = "telephones"
+                    if good == "barrel": good = "barrels"
+
+                    good_produce[good] = good_produce.get(good, 0) + (pop["current_producing"] / 1000)
+                    goods_pricing[good] = goods_pricing.get(good, 0) + (pop["current_producing"] * world_goods_price[good] / 1000)
+        for building in state.find_all("state_buildings"):
+            name = building["building"]
+            real_income = building["last_income"]
+            fab_stats = stats.get(name, None)
+            good = list(fab_stats[1].keys())[0]
+            amount = real_income / world_goods_price[good]
+            good_produce[good] = good_produce.get(good, 0) + amount
+            goods_pricing[good] = goods_pricing.get(good, 0) + (amount * world_goods_price[good])
+
+    return good_produce, goods_pricing
+
+def get_economy_demand_podrobno(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    good_demand = {}
+    goods_pricing = {}
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop in province.find_all("artisans"):
+                needs = pop["need"]
+                goods = ['cotton', 'machine_parts', 'timber', 'fabric', 'grain', \
+                       'cement', 'fish', 'furniture', 'steamer_convoy', 'tobacco', 'luxury_clothes',\
+                        'regular_clothes', 'luxury_furniture', 'automobiles', \
+                            'electric_gear', 'wine', 'coal', 'fertilizer', 'ammunition', 'glass', \
+                            'canned_food', 'small_arms', 'liquor', 'tea', 'silk', \
+                                'explosives', 'steel', 'aeroplanes', 'artillery', 'telephones',\
+                        'precious_metal', 'lumber', 'paper', 'iron', 'dye', 'sulphur', \
+                            'fuel', 'oil', 'coffee', 'fruit', 'tropical_wood', 'rubber', 'opium']
+                g_needs = []
+                for good in goods:
+                    if needs[good] is None:
+                        continue
+                    g_needs.append(good)
+    
+                if needs is None:
+                    continue
+                real_spending = pop["needs_cost"] / 1000
+                total_inp = sum(needs[g] * world_goods_price[g] for g in g_needs)
+                for good in needs:
+                    share = (needs[good] * world_goods_price[good]) / total_inp if total_inp else 0
+                    good_demand[good] = good_demand.get(good, 0) + real_spending * share / world_goods_price[good]
+                    goods_pricing[good] = goods_pricing.get(good, 0) + real_spending * share
+        
+        for building in state.find_all("state_buildings"):
+            name = building["building"]
+            real_spending = building["last_spending"] / 1000
+            fab_stats = stats.get(name, None)
+            inp = fab_stats[0]
+            total_inp = sum(inp.values())
+            for good in inp:
+                share = inp[good] / total_inp if total_inp else 0
+                good_demand[good] = good_demand.get(good, 0) + real_spending * share / world_goods_price[good]
+                goods_pricing[good] = goods_pricing.get(good, 0) + real_spending * share
+
+    return good_demand, goods_pricing
+
+def get_export(tag):
+    if tag not in data:
+        return 0
+    demand = get_economy_demand_podrobno(tag)[1]
+    prod = get_economy_producing_podrobno(tag)[1]
+    export = 0
+    for good in world_goods_price:
+        dem = demand.get(good, 0)
+        sup = prod.get(good, 0)
+        export += max(sup - dem, 0)
+
+    return int(export)
+
+def get_import(tag):
+    if tag not in data:
+        return 0
+    demand = get_economy_demand_podrobno(tag)[1]
+    prod = get_economy_producing_podrobno(tag)[1]
+    import_t = 0
+    for good in world_goods_price:
+        dem = demand.get(good, 0)
+        sup = prod.get(good, 0)
+        import_t += max(dem - sup, 0)
+
+    return int(import_t)
+
+def get_trade_balance(tag):
+    return get_export(tag) - get_import(tag)
+
+def get_army_budget(tag):
+    if tag not in data:
+        return 0
+    supply = data[tag]["land_supply_cost"]
+    cost = 0
+    if supply is None:
+        return 0
+    for good in supply:
+        cost += supply[good] * world_goods_price[good]
+    return int(cost)
+
+def get_naval_budget(tag):
+    if tag not in data:
+        return 0
+    supply = data[tag]["naval_supply_cost"]
+    cost = 0
+    if supply is None:
+        return 0
+    for good in supply:
+        cost += supply[good] * world_goods_price[good]
+    return int(cost)
+
+def get_diversification_ind(tag):
+    res = get_economy_producing_podrobno(tag)[1]
+    top3 = sorted(res.items(), key=lambda x: x[1], reverse=True)[:3]
+    total = 0
+    for _, amount in top3:
+        total += amount
+    if total == 0:
+        return 0
+    return round(getSupply(tag) / total, 3)
+
+def sum_vals(d):
+    total = 0
+    for key in d:
+        total += d[key]
+    return total
+
+def get_country_savings(tag):
+    if tag not in data:
+        return 0
+    money = data[tag]["money"]
+    return round(money, 3)
+
+def get_tax(tag):
+    if tag not in data:
+        return 0
+    country = data[tag]
+    taxes = {}
+    for tax_type in ["rich_tax", "middle_tax", "poor_tax"]:
+        s = country[tax_type]["total"] / 1000
+        taxes[tax_type] = s
+    return taxes
+
+def average_spendings(tag):
+    if tag not in data:
+        return 0
+    spendings = {"rich" : 0, "middle": 0, "poor": 0}
+    rich_pops = ["aristocrats", "capitalists", "officers"]
+    taxes = get_tax(tag)
+    rich_population = 0
+    for pop in rich_pops:
+        rich_population += getpopsize(pop, tag)
+    spendings["rich"] = taxes["rich_tax"] / rich_population if rich_population > 0 else 0
+    mid_pops = ["clerks", "artisans", "bureaucrats", "officers", "clergymen"]
+    mid_population = 0
+    for pop in mid_pops:
+        mid_population += getpopsize(pop, tag)
+    spendings["middle"] = taxes["middle_tax"] / mid_population if mid_population > 0 else 0
+    poor_pops = ["farmers", "laborers", "slaves", "soldiers", "craftsmen"]
+    poor_population = 0
+    for pop in poor_pops:
+        poor_population += getpopsize(pop, tag)
+    spendings["poor"] = taxes["poor_tax"] / poor_population if poor_population > 0 else 0
+    return spendings
+
+def jinny_ind(tag):
+    if tag not in data:
+        return 0
+    spends = average_spendings(tag)
+    rich_avg = spends["rich"] 
+    taxes = get_tax(tag)
+    all_taxes = sum_vals(taxes)
+    all_avg = all_taxes / get_population(tag) if get_population(tag) > 0 else 0
+    if all_taxes == 0:
+        return 0
+    return round(rich_avg / all_avg, 3)
+    
+def amortization(tag):
+    pass
+
+def avg_rentability(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    all_income = 0
+    fab = 0
+    total_profit = 0
+    total_cost = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            income = building["last_income"]
+            cost = building["last_spending"]
+            if income == 0 and cost == 0:
+                continue
+            total_profit += (income - cost)
+            total_cost += cost
+            fab += 1
+    if fab == 0:
+        return 0
+    if total_cost == 0:
+        return 0
+    return round(total_profit / total_cost * 100, 1)
+
+def get_gdp_added_value(tag):
+    pass
+
+def get_all_work_places(tag):
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    all_work_pops = get_employed_fabric(tag)
+    new_places = 0
+    for state in states:
+        for building in state.find_all("state_buildings"):
+            new_places += (building["level"] + 1) * 10000
+    return new_places - all_work_pops
+
+def army_innovation(tag):
+    if tag not in data:
+        return 0
+    tech_list = [
+    "post_napoleonic_thought", "strategic_mobility", "point_defense_system", 
+    "deep_defense_system", "infiltration", "flintlock_rifles", 
+    "muzzle_loaded_rifles", "breech_loaded_rifles", "machine_guns", 
+    "bolt_action_rifles", "bronze_muzzle_loaded_artillery", 
+    "iron_muzzle_loaded_artillery", "iron_breech_loaded_artillery", 
+    "steel_breech_loaded_artillery", "military_staff_system", 
+    "military_plans", "army_command_principle", "army_professionalism", 
+    "army_decision_making", "army_risk_management"
+    ]
+    country = data[tag]
+    techs = country["technology"]
+    count = 0
+    for tech in techs:
+        if tech in tech_list:
+            count += 1
+    return count
+
+def naval_innovation(tag):
+    if tag not in data:
+        return 0
+    all_naval_techs = [
+    "post_nelsonian_thought", "naval_professionalism", "naval_decision_making",
+    "naval_risk_management", "naval_staff_system", "naval_plans",
+    "clipper_design", "steamers", "iron_steamers", "steel_steamers",
+    "steam_turbine_ships", "oil_driven_ships", "fire_control_systems",
+    "weapon_platforms", "main_armament", "advanced_naval_ordnance",
+    "long_range_fire_control", "heavy_armament", "naval_design_bureaus",
+    "advanced_naval_design", "modern_naval_design", "naval_engineering",
+    "naval_architecture", "dreadnought_design", "alphabetic_flag_signaling",
+    "the_command_principle", "naval_logistics", "naval_intelligence",
+    "naval_communications", "naval_coordination"
+    ]
+    country = data[tag]
+    techs = country["technology"]
+    count = 0
+    for tech in techs:
+        if tech in all_naval_techs:
+            count += 1
+    return count
+
+def real_gini(tag):
+    if tag not in data:
+        return 0
+    
+    all_money = get_all_pop_money(tag)
+    all_pop = get_population(tag)
+    
+    pop_types = [
+        'farmers', 'labourers', 'artisans', 'clergymen', 
+        'clerks', 'bureaucrats', 'soldiers', 'officers', 
+        'aristocrats', 'capitalists', 'slaves', 'serfs', 'craftsmen'
+    ]
+    lorenz = []
+    
+    states = data[tag].find_all("state")
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            province = data[provid]
+            for pop_type in pop_types:
+                all_pops = province.find_all(pop_type)
+                for pop in all_pops:
+                    size_per = pop["size"] / all_pop * 100
+                    if all_money == 0:
+                        continue
+                    money_per = pop["money"] / all_money * 100
+                    if money_per == 0:
+                        continue
+                    lorenz.append((size_per, money_per))
+    lorenz = sorted(lorenz, key=lambda x: x[1] / x[0])
+    pop_sizes = np.array([x[0] for x in lorenz])
+    wealth = np.array([x[1] for x in lorenz])
+    cumulative_pop = np.cumsum(pop_sizes) / np.sum(pop_sizes)
+    cumulative_wealth = np.cumsum(wealth) / np.sum(wealth)
+    area = np.trapezoid(cumulative_wealth, cumulative_pop)
+    
+    return round(1 - 2 * area, 3)
+
+def get_military_spendings(tag):
+    if tag not in data:
+        return 0
+    spendings = data[tag]["military_spending"]["maxValue"]
+    population = 0
+    states = data[tag].find_all("state")
+    pops = ["soldiers", "officers"]
+    for state in states:
+        prov_ids = list(state.find_all("provinces"))
+        for provid in prov_ids:
+            for pop in pops:
+                for popul in data[provid].find_all(pop):
+                    population += popul["size"]
+    if population == 0: return 0
+    return round(spendings / population, 3)
+
+def get_country_size(tag):
+    if tag not in data:
+        return 0
+    states = list(data[tag].find_all("state"))
+    return len(states)
+
+def gdp_per_reg(tag):
+    if tag not in data:
+        return 0
+    return round(getGDP(tag) / get_country_size(tag), 3)
+
+def population_per_reg(tag):
+    if tag not in data:
+        return 0
+    return int(get_population(tag) / get_country_size(tag))
+
+def get_gov_type(tag):
+    if tag not in data:
+        return "unknown"
+    gov = data[tag]["government"]
+    if gov is None:
+        return "unknown"
+    return gov
+
+def get_money_mass(tag):
+    if tag not in data:
+        return 0
+    gov_money = get_country_savings(tag)
+    pop_money = get_all_pop_money(tag)
+    bank = get_bank_savings(tag)
+    return round(gov_money + pop_money + bank, 3)
+
+def get_avg_pop_savings(tag):
+    if tag not in data:
+        return 0
+    all_pop_money = get_all_pop_money(tag)
+    population = get_population(tag)
+    if population == 0:
+        return 0
+    return round(all_pop_money / population * 1000, 3)
+
+def get_bank_savings(tag):
+    if tag not in data:
+        return 0
+    bank = data[tag]["bank"]
+    return round(bank["money"] + bank["money_lent"], 2)
+
+def get_pop_spendings(tag):
+    pass
+
+if __name__ == "__main__":
+    sys.setrecursionlimit(10000)
+    def parse_victoria2_save(file_path):
+        try:
+            with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
+                content = f.read()
+            
+            content = re.sub(r'(bank=-?\d+\.\d+)\d{2}\.\d+', r'\1', content)
+            
+            data = pyradox.txt.parse(content)
+            return data
+            
+        except Exception as e:
+            print(f"Ошибка при парсинге: {e}")
+            return None
+        
+    data = parse_victoria2_save("siiiey1918_01_11.v2")
+    world_goods_price = data["worldmarket"]["price_pool"]
+    print(sum_vals(get_economy_producing_podrobno("JAP")[1]))
+    print(getSupply("JAP"))
