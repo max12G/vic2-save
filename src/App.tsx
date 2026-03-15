@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { open } from "@tauri-apps/plugin-dialog"
 import { CountryStats, LoadResult } from "./types"
 import { StatsPanel } from "./components/StatsPanel"
 import { CompareView } from "./components/CompareView"
@@ -31,7 +32,10 @@ export default function App() {
   const [error, setError] = useState("")
 
   async function handleOpenFile() {
-    const path = prompt("Путь к .v2 файлу:")
+    const path = await open({
+      filters: [{ name: "Victoria 2 Save", extensions: ["v2"] }],
+      multiple: false,
+    })
     if (!path) return
 
     setLoading(true)
