@@ -353,3 +353,95 @@ body {
 .compare-table td:first-child { text-align: left; color: var(--text-muted); }
 .compare-table th { color: var(--text-dim); font-weight: 500; font-size: 11px; }
 .compare-table tr:hover td { background: #22253a; }
+
+/* ── StatsPanel v2 ── */
+.metric-sub {
+  font-size: 11px;
+  color: #4f8ef7;
+  margin-top: 3px;
+}
+
+.s-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.s-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.s-card-title {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.pie-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pie-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-label {
+  font-size: 11px;
+  color: #888;
+  flex: 1;
+}
+
+.legend-val {
+  font-size: 12px;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bar-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bar-label {
+  font-size: 11px;
+  color: #666;
+}
+
+.bar-val {
+  font-size: 11px;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+}

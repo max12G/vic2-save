@@ -27,8 +27,6 @@ export function CompareView({ data }: Props) {
 
   const econData = makeBarData([
     { key: "gdp", label: "ВВП" },
-    { key: "export", label: "Экспорт" },
-    { key: "import", label: "Импорт" },
   ])
 
   const getMax = (key: keyof CountryStats) =>
@@ -37,7 +35,7 @@ export function CompareView({ data }: Props) {
   const radarData = [
     { metric: "ВВП/кап",   key: "gdp_per_cap" as keyof CountryStats },
     { metric: "Грамот.",   key: "literacy"    as keyof CountryStats },
-    { metric: "Индустр.",  key: "ind_power"   as keyof CountryStats },
+    { metric: "Индустр.",  key: "industrial_level"   as keyof CountryStats },
     { metric: "Армия",     key: "army_innov"  as keyof CountryStats },
     { metric: "Флот",      key: "naval_innov" as keyof CountryStats },
     { metric: "ВВП",       key: "gdp"         as keyof CountryStats },
@@ -51,17 +49,17 @@ export function CompareView({ data }: Props) {
   })
 
   const tableRows: { label: string; key: keyof CountryStats; format?: (v: number) => string }[] = [
-    { label: "ВВП (£)",           key: "gdp",          format: fmt },
-    { label: "ВВП / капиту",      key: "gdp_per_cap",  format: v => v.toFixed(3) },
-    { label: "Население",          key: "population",   format: fmt },
-    { label: "Грамотность %",      key: "literacy",     format: v => v.toFixed(1) + "%" },
-    { label: "Инд. мощь %",        key: "ind_power",    format: v => (v * 100).toFixed(1) + "%" },
-    { label: "Коэф. Джини",        key: "gini",         format: v => v.toFixed(3) },
-    { label: "Экспорт (£)",        key: "export",       format: fmt },
-    { label: "Импорт (£)",         key: "import",       format: fmt },
-    { label: "Безраб. фабрик %",   key: "fab_unemploy", format: v => v.toFixed(1) + "%" },
-    { label: "Армейские техн.",    key: "army_innov",   format: v => v + " / 20" },
-    { label: "Морские техн.",      key: "naval_innov",  format: v => v + " / 30" },
+    { label: "ВВП (£)",            key: "gdp",              format: fmt },
+    { label: "ВВП / капиту",       key: "gdp_per_cap",      format: v => v.toFixed(3) },
+    { label: "Население",           key: "population",       format: fmt },
+    { label: "Грамотность %",       key: "literacy",         format: v => v.toFixed(1) + "%" },
+    { label: "Инд. мощь %",         key: "industrial_level",        format: v => (v * 100).toFixed(1) + "%" },
+    { label: "Коэф. Джини",         key: "gini",             format: v => v.toFixed(3) },
+    { label: "Безраб. фабрик %",    key: "fabric_unemployement", format: v => v.toFixed(1) + "%" },
+    { label: "Армейские техн.",     key: "army_innov",       format: v => v + " / 20" },
+    { label: "Морские техн.",       key: "naval_innov",      format: v => v + " / 30" },
+    { label: "Наземный бюджет (£)", key: "military_budget",  format: fmt },
+    { label: "Морской бюджет (£)",  key: "naval_budget",     format: fmt },
   ]
 
   const tooltipStyle = {

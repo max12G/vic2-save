@@ -2,17 +2,32 @@ export interface CountryStats {
   tag: string
   gdp: number
   population: number
-  literacy: number
   gdp_per_cap: number
-  ind_power: number
+  money_activity: number
+  consuption: number
+  supply: number
+  industrial_level: number
+  subside_percent: number
+  rentability: number
+  subside_pct: number
+  gold_income: number
   gini: number
-  export: number
-  import: number
+  fabric_employee: number
+  fabric_unemployement: number
+  rgo_employement: number
+  all_employemenent: number
+  all_free_work_places: number
+  fabric_worker_salary: number
+  capitalist_salary: number
+  literacy: number
+  military_budget: number
+  naval_budget: number
   army_innov: number
   naval_innov: number
-  subside_pct: number
-  fab_unemploy: number
   country_size: number
+  population_per_reg: number
+  gdp_per_reg: number
+  goverement: string
 }
 
 export interface LoadResult {
