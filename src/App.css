@@ -445,3 +445,11 @@ body {
   font-size: 12px;
   color: #666;
 }
+
+.recharts-rectangle.recharts-bar-bg {
+  fill: transparent !important;
+}
+
+.recharts-rectangle.recharts-tooltip-cursor {
+  fill: transparent !important;
+}

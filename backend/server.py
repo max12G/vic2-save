@@ -6,7 +6,6 @@ from pyradox import txt as pyradox_txt
 from pyradox.datatype import time as pyradox_time
 import logic
 
-pyradox_time.Time.validate = lambda self, *args: None
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
@@ -38,6 +37,11 @@ def load_save(body: LoadRequest):
     logic.world_goods_price = world_goods_price
     countries = [str(k) for k in logic.data.keys()
                  if len(str(k)) == 3 and str(k).isalpha() and str(k).isupper()]
+    countries.sort(key=logic.getGDP, reverse=True)
+    countries = list(filter(logic.country_exists, countries))
+    #C:/Users/User/Documents/parser/vic2-save/backend/data/siiiey1918_01_11.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/data/Dinney2004_01_01.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/data/Dinney2005_08_29.v2
     return {"countries": countries}
 
 @app.get("/stats/{tag}")
@@ -53,6 +57,7 @@ def get_stats(tag: str):
         "subside_percent": logic.get_subside_ind(tag),
         "rentability": logic.avg_rentability(tag),
         "subside_pct":  logic.get_subside_ind(tag),
+        "diversification": logic.get_diversification_ind(tag),
         "gold_income": logic.get_gold_mining(tag),
         "gini":         logic.real_gini(tag),
         "fabric_employee": logic.get_employed_fabric(tag),
@@ -63,7 +68,6 @@ def get_stats(tag: str):
         "fabric_worker_salary": logic.get_avg_salary(tag),
         "capitalist_salary": logic.get_avg_capilatils_salary(tag),
         "literacy":     logic.get_literacy(tag),
-        #diversification
         "military_budget": logic.get_army_budget(tag),
         "naval_budget": logic.get_naval_budget(tag),
         "army_innov":   logic.army_innovation(tag),
@@ -83,4 +87,9 @@ def compare(tags: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="localhost", port=8000)
+    import traceback
+    try:
+        uvicorn.run(app, host="localhost", port=8000, log_level="warning")
+    except Exception as e:
+        with open("server_error.log", "w") as f:
+            f.write(traceback.format_exc())

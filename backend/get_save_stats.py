@@ -42,6 +42,9 @@ all_country_tags = [
     tag for tag in data.keys() 
     if isinstance(tag, str) and len(tag) == 3 and tag.isupper() and data[tag].find("state") is not None
 ]
+print(all_country_tags)
+all_country_tags.sort(key=logic.getGDP)
+print(all_country_tags)
 top = []
 to_csv = []                                                                                                                                                                                                                             
 print("Предварительная загрузка...")

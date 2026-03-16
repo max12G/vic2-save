@@ -8,22 +8,32 @@ pub fn run() {
         .setup(|app| {
             #[cfg(debug_assertions)]
             {
-                std::process::Command::new("python")
+                let _ = std::process::Command::new("python")
                     .args(&["backend/server.py"])
-                    .spawn()
-                    .expect("failed to start python server");
+                    .spawn();
             }
 
             #[cfg(not(debug_assertions))]
             {
-                let binary_path = app.path().resource_dir()
-                    .expect("failed to get resource dir")
-                    .join("binaries")
-                    .join("server-x86_64-pc-windows-msvc.exe");
+                // resource_dir — туда Tauri копирует файлы из bundle.resources
+                let resource_dir = app.path().resource_dir().ok();
+                let exe_dir = std::env::current_exe()
+                    .ok()
+                    .and_then(|p| p.parent().map(|p| p.to_path_buf()));
 
-                std::process::Command::new(&binary_path)
-                    .spawn()
-                    .expect("failed to start server");
+                let candidates = [
+                    resource_dir.as_ref().map(|d| d.join("server.exe")),
+                    exe_dir.as_ref().map(|d| d.join("server.exe")),
+                    exe_dir.as_ref().map(|d| d.join("binaries").join("server-x86_64-pc-windows-msvc.exe")),
+                    resource_dir.as_ref().map(|d| d.join("binaries").join("server-x86_64-pc-windows-msvc.exe")),
+                ];
+
+                for candidate in candidates.into_iter().flatten() {
+                    if candidate.exists() {
+                        let _ = std::process::Command::new(&candidate).spawn();
+                        break;
+                    }
+                }
             }
 
             Ok(())

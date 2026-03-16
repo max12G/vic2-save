@@ -10,6 +10,7 @@ export interface CountryStats {
   subside_percent: number
   rentability: number
   subside_pct: number
+  diversification: number
   gold_income: number
   gini: number
   fabric_employee: number

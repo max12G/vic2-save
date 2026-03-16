@@ -1,6 +1,7 @@
 from pyradox import txt as pyradox_txt
 from pyradox.datatype import time as pyradox_time
 import os
+import sys
 
 def parse_victoria2_file(file_path):
     try:
@@ -14,7 +15,13 @@ def parse_victoria2_file(file_path):
         return None
     
 
-_here = os.path.dirname(os.path.abspath(__file__))
+def _get_base_dir():
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+_here = _get_base_dir()
+_prod_types_path = os.path.join(_here, "data", "production_types.txt")
 data = parse_victoria2_file(os.path.join(_here, "data", "production_types.txt"))
 factories = [k for k in data.keys() if data[k]["input_goods"] != None]
 def get_factory_info(factory):

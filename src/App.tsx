@@ -16,6 +16,12 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json()
 }
 
+declare global {
+  interface Window {
+    __TAURI_INTERNALS__?: unknown
+  }
+}
+
 type View = "stats" | "compare"
 
 export default function App() {
@@ -32,11 +38,18 @@ export default function App() {
   const [error, setError] = useState("")
 
   async function handleOpenFile() {
-    const path = await open({
+  let path: string | null = null
+
+    if (window.__TAURI_INTERNALS__) {
+    path = await open({
       filters: [{ name: "Victoria 2 Save", extensions: ["v2"] }],
       multiple: false,
-    })
-    if (!path) return
+    }) as string | null
+  } else {
+    path = prompt("Путь к .v2 файлу:")
+  }
+
+  if (!path) return
 
     setLoading(true)
     setError("")

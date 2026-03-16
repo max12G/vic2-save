@@ -16,6 +16,7 @@ const ORANGE = "#F39C12"
 const PANEL = "#0C0F1C"
 const BORDER = "#161C30"
 
+
 function fmt(n: any): string {
   const v = Number(n)
   if (isNaN(v)) return "—"
@@ -98,7 +99,7 @@ export function StatsPanel({ stats }: Props) {
   const gini = Number(stats.gini) || 0
 
   const radarData = [
-    { metric: "ВВП/кап",  value: Math.min(Number(stats.gdp_per_cap) * 5, 100) },
+    { metric: "ВВП на душу нас.",  value: Math.min(Number(stats.gdp_per_cap) * 5, 100) },
     { metric: "Грамот.",  value: Number(stats.literacy) },
     { metric: "Индустр.", value: indLevel * 100 },
     { metric: "Армия",    value: Math.min(Number(stats.army_innov) * 5, 100) },
@@ -107,13 +108,20 @@ export function StatsPanel({ stats }: Props) {
   ]
 
   const structureData = [
-    { name: "Промышленность", value: Math.round(gdp * indLevel), fill: BLUE },
-    { name: "С/х и ремесло",  value: Math.round(gdp * (1 - indLevel)), fill: GREEN },
+    { name: "Промышленность", value: Math.round(gdp * indLevel) },
+    { name: "С/х и ремесло",  value: Math.round(gdp * (1 - indLevel)) },
   ]
 
   const employData = [
     { name: "Фабрики", value: Number(stats.fabric_employee) },
     { name: "Добыча",  value: Number(stats.all_employemenent) - Number(stats.fabric_employee) },
+  ]
+
+  const overviewEconData = [
+    { name: "Промышленность",           value: Math.round(gdp * indLevel) },
+    { name: "С/х и ремесло",             value: Math.round(gdp * (1 - indLevel)) },
+    { name: "Валовый выпуск",            value: Number(stats.supply) },
+    { name: "Промежут. потребление",     value: Number(stats.consuption) },
   ]
 
   return (
@@ -167,11 +175,10 @@ export function StatsPanel({ stats }: Props) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               <KpiCard label="ВВП"              value={fmt(stats.gdp) + " £"}             sub={fmt(stats.gdp_per_reg) + " £/регион"}         color={GOLD} />
               <KpiCard label="Население"        value={fmt(stats.population)}              sub={fmt(stats.population_per_reg) + " на регион"} color={BLUE} />
-              <KpiCard label="ВВП на душу населения" value={fix(stats.gdp_per_cap, 3) + " £"}  sub={"Скор. обращения " + fix(Number(stats.money_activity) * 100)} color={GREEN} />
-              <KpiCard label="Грамотность"      value={fix(stats.literacy) + "%"}          sub={"Джини " + fix(stats.gini, 3)}                color={gini > 0.6 ? RED : ORANGE} />
+              <KpiCard label="ВВП на душу населения" value={fix(stats.gdp_per_cap, 3) + " £"}  sub={"Скорость обращения накоплений " + fix(Number(stats.money_activity) * 100)} color={GREEN} />
+              <KpiCard label="Грамотность"      value={fix(stats.literacy) + "%"}          sub={"Джини " + fix(stats.gini, 3)}                color={stats.literacy > 60 ? GREEN : ORANGE} />
             </div>
 
-            {/* Радар + ключевые показатели */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "14px 16px" }}>
                 <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 4 }}>КОМПЛЕКСНАЯ ОЦЕНКА</div>
@@ -188,7 +195,7 @@ export function StatsPanel({ stats }: Props) {
                 <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 10 }}>КЛЮЧЕВЫЕ ПОКАЗАТЕЛИ</div>
                 <StatRow label="Доля промышленности"  value={fix(indLevel * 100) + "%"}    color={BLUE} />
                 <StatRow label="Рентабельность"        value={fix(stats.rentability) + "%"} color={Number(stats.rentability) < 0 ? RED : GREEN} />
-                <StatRow label="Армия / Флот"          value={`${stats.army_innov}/20 · ${stats.naval_innov}/30`} />
+                <StatRow label="Армия / Флот"          value={`${stats.army_innov} / 40 · ${stats.naval_innov} / 40`} />
                 <StatRow label="Золотодобыча"          value={fmt(stats.gold_income) + " £"} color={GOLD} />
                 <StatRow label="Доля субсидируемых предприятий" value={fix(stats.subside_pct) + "%"} color={Number(stats.subside_pct) > 30 ? RED : ORANGE} />
                 <StatRow label="Безработица на фабриках"       value={fix(stats.fabric_unemployement) + "%"} color={Number(stats.fabric_unemployement) > 20 ? RED : GREEN} />
@@ -196,16 +203,10 @@ export function StatsPanel({ stats }: Props) {
               </div>
             </div>
 
-            {/* Структура экономики — полная ширина снизу */}
             <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "14px 16px" }}>
               <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 1 }}>СТРУКТУРА ЭКОНОМИКИ</div>
               <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={[
-                  { name: "Промышленность",      value: Math.round(gdp * indLevel) },
-                  { name: "С/х и ремесло",        value: Math.round(gdp * (1 - indLevel)) },
-                  { name: "Валовый выпуск",       value: Number(stats.supply) },
-                  { name: "Промежуточное потребление",    value: Number(stats.consuption) },
-                ]} barSize={60} margin={{ top: 20, right: 40, left: 0, bottom: 0 }}>
+                <BarChart data={overviewEconData} barSize={60} margin={{ top: 20, right: 40, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke={BORDER} strokeDasharray="3 3" />
                   <XAxis dataKey="name" tick={{ fill: "#3A4A6A", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tickFormatter={fmt} tick={{ fill: "#3A4A6A", fontSize: 11 }} axisLine={false} tickLine={false} width={50} />
@@ -233,7 +234,7 @@ export function StatsPanel({ stats }: Props) {
               <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
                 <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 14 }}>СТРУКТУРА ВВП</div>
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={structureData} barSize={60}>
+                  <BarChart data={structureData} barSize={80} margin={{ top: 24, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid stroke={BORDER} strokeDasharray="3 3" />
                     <XAxis dataKey="name" tick={{ fill: "#3A4A6A", fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={fmt} tick={{ fill: "#3A4A6A", fontSize: 10 }} axisLine={false} tickLine={false} width={50} />
@@ -248,6 +249,7 @@ export function StatsPanel({ stats }: Props) {
               <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
                 <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 14 }}>ДЕТАЛИ</div>
                 <StatRow label="ВВП на регион"       value={fmt(stats.gdp_per_reg) + " £"} />
+                <StatRow label="Диверсификация"       value={fix(stats.diversification, 3)} />
                 <StatRow label="Население на регион" value={fmt(stats.population_per_reg)} />
                 <StatRow label="Скорость обращения накоплений"     value={fix(Number(stats.money_activity) * 100, 2)} />
                 <StatRow label="Золотодобыча"         value={fmt(stats.gold_income) + " £"} color={GOLD} />
@@ -264,8 +266,8 @@ export function StatsPanel({ stats }: Props) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
               <KpiCard label="Занятость на фабриках" value={fmt(stats.fabric_employee)}         color={BLUE} />
               <KpiCard label="Безработица на фабриках"    value={fix(stats.fabric_unemployement) + "%"} sub={Number(stats.fabric_unemployement) > 20 ? "⚠ высокая" : "норма"} color={Number(stats.fabric_unemployement) > 20 ? RED : GREEN} />
-              <KpiCard label="Рентабельность"     value={fix(stats.rentability) + "%"}        color={Number(stats.rentability) < 0 ? RED : GREEN} />
-              <KpiCard label="Доля субсидируемых предприятий"      value={fix(stats.subside_pct) + "%"}        color={Number(stats.subside_pct) > 30 ? RED : ORANGE} />
+              <KpiCard label="Средняя рентабельность предприятий"     value={fix(stats.rentability) + "%"} sub={Number(stats.rentability) > 20 ? "здоровая" : "⚠ низкая"} color={Number(stats.rentability) > 20 ? GREEN : RED} />
+              <KpiCard label="Доля субсидируемых предприятий"      value={fix(stats.subside_pct) + "%"} sub={Number(stats.subside_pct) > 20 ? "⚠ зависимость от гос. средств" : "норма"}       color={Number(stats.subside_pct) > 20 ? RED : GREEN} />
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -277,7 +279,7 @@ export function StatsPanel({ stats }: Props) {
                     <XAxis type="number" tickFormatter={fmt} tick={{ fill: "#3A4A6A", fontSize: 10 }} stroke={BORDER} />
                     <YAxis type="category" dataKey="name" tick={{ fill: "#9AAAC8", fontSize: 11 }} stroke={BORDER} width={70} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill={BLUE} radius={[0, 4, 4, 0]} name="Занято"
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} name="Занято" fill={BLUE}
                       label={{ position: "right", formatter: fmt, fill: "#555", fontSize: 10 }}
                     />
                   </BarChart>
@@ -286,10 +288,11 @@ export function StatsPanel({ stats }: Props) {
 
               <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
                 <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 14 }}>ПОКАЗАТЕЛИ</div>
-                <ProgressRow label="Безработица фабрики"  value={Number(stats.fabric_unemployement)} max={100} color={Number(stats.fabric_unemployement) > 20 ? RED : BLUE}   valLabel={fix(stats.fabric_unemployement) + "%"} />
-                <ProgressRow label="Безработица добыча"   value={Number(stats.rgo_employement)}      max={100} color={Number(stats.rgo_employement) > 30 ? RED : GREEN}        valLabel={fix(stats.rgo_employement) + "%"} />
-                <ProgressRow label="Доля субсидируемых предприятий" value={Number(stats.subside_pct)}         max={100} color={Number(stats.subside_pct) > 30 ? RED : ORANGE}           valLabel={fix(stats.subside_pct) + "%"} />
+                <ProgressRow label="Безработица на фабриках"  value={Number(stats.fabric_unemployement)} max={100} color={Number(stats.fabric_unemployement) > 20 ? RED : BLUE}   valLabel={fix(stats.fabric_unemployement) + "%"} />
+                <ProgressRow label="Безработица на добыче"   value={Number(stats.rgo_employement)}      max={100} color={Number(stats.rgo_employement) > 30 ? RED : GREEN}        valLabel={fix(stats.rgo_employement) + "%"} />
+                <ProgressRow label="Доля субсидируемых предприятий" value={Number(stats.subside_pct)}         max={100} color={Number(stats.subside_pct) > 20 ? RED : BLUE}           valLabel={fix(stats.subside_pct) + "%"} />
                 <div style={{ marginTop: 12 }}>
+                  <StatRow label="Диверсификация" value={fix(stats.diversification, 3)} />
                   <StatRow label="Общая занятость"      value={fmt(stats.all_employemenent)} />
                   <StatRow label="Свободных мест"     value={fmt(stats.all_free_work_places)} />
                   <StatRow label="Средняя з/п рабочего"   value={fix(stats.fabric_worker_salary, 3) + " £"} />
@@ -306,8 +309,8 @@ export function StatsPanel({ stats }: Props) {
         {tab === "military" && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-              <KpiCard label="Инно. армии"  value={stats.army_innov + " / 20"}  color={ORANGE} />
-              <KpiCard label="Инно. флота"  value={stats.naval_innov + " / 30"}  color={BLUE} />
+              <KpiCard label="Инно. армии"  value={stats.army_innov + " / 40"}  color={ORANGE} />
+              <KpiCard label="Инно. флота"  value={stats.naval_innov + " / 40"}  color={BLUE} />
               <KpiCard label="Наземный бюджет"  value={fmt(stats.military_budget) + " £"} color={RED} />
               <KpiCard label="Морской бюджет"  value={fmt(stats.naval_budget) + " £"}    color={BLUE} />
             </div>
@@ -315,8 +318,8 @@ export function StatsPanel({ stats }: Props) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
                 <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 14 }}>ТЕХНОЛОГИЧЕСКИЙ УРОВЕНЬ</div>
-                <ProgressRow label="Армейские технологии" value={Number(stats.army_innov)}  max={20} color={ORANGE} valLabel={`${stats.army_innov} / 20`} />
-                <ProgressRow label="Морские технологии"   value={Number(stats.naval_innov)} max={30} color={BLUE}   valLabel={`${stats.naval_innov} / 30`} />
+                <ProgressRow label="Армейские технологии" value={Number(stats.army_innov)}  max={40} color={ORANGE} valLabel={`${stats.army_innov} / 40`} />
+                <ProgressRow label="Морские технологии"   value={Number(stats.naval_innov)} max={40} color={BLUE}   valLabel={`${stats.naval_innov} / 40`} />
                 <div style={{ marginTop: 14 }}>
                   <StatRow label="Наземный бюджет"  value={fmt(stats.military_budget) + " £"} color={ORANGE} />
                   <StatRow label="Морской бюджет"   value={fmt(stats.naval_budget) + " £"}    color={BLUE} />

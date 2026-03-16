@@ -25,20 +25,53 @@ export function CompareView({ data }: Props) {
     })
   }
 
-  const econData = makeBarData([
-    { key: "gdp", label: "ВВП" },
-  ])
+  const econData = makeBarData([{ key: "gdp", label: "ВВП" }])
+
+  const byGdp     = [...tags].sort((a, b) => Number(data[b].gdp) - Number(data[a].gdp))
+  const byPop     = [...tags].sort((a, b) => Number(data[b].population) - Number(data[a].population))
+  const byGdpPc   = [...tags].sort((a, b) => Number(data[b].gdp_per_cap) - Number(data[a].gdp_per_cap))
+  const byMilitary = [...tags].sort((a, b) =>
+    (Number(data[b].naval_budget) + Number(data[b].military_budget)) -
+    (Number(data[a].naval_budget) + Number(data[a].military_budget))
+  )
+
+  const rankings = [
+    {
+      title: "ВВП (£)",
+      sorted: byGdp,
+      getNum: (t: string) => Number(data[t].gdp),
+      getValue: (t: string) => fmt(Number(data[t].gdp)) + " £",
+    },
+    {
+      title: "Население",
+      sorted: byPop,
+      getNum: (t: string) => Number(data[t].population),
+      getValue: (t: string) => fmt(Number(data[t].population)),
+    },
+    {
+      title: "ВВП на душу населения (£)",
+      sorted: byGdpPc,
+      getNum: (t: string) => Number(data[t].gdp_per_cap),
+      getValue: (t: string) => Number(data[t].gdp_per_cap).toFixed(3) + " £",
+    },
+    {
+      title: "Военный бюджет (£)",
+      sorted: byMilitary,
+      getNum: (t: string) => Number(data[t].naval_budget) + Number(data[t].military_budget),
+      getValue: (t: string) => fmt(Number(data[t].naval_budget) + Number(data[t].military_budget)) + " £",
+    },
+  ]
 
   const getMax = (key: keyof CountryStats) =>
     Math.max(...tags.map(t => Number(data[t][key]) || 0)) || 1
 
   const radarData = [
-    { metric: "ВВП/кап",   key: "gdp_per_cap" as keyof CountryStats },
-    { metric: "Грамот.",   key: "literacy"    as keyof CountryStats },
-    { metric: "Индустр.",  key: "industrial_level"   as keyof CountryStats },
-    { metric: "Армия",     key: "army_innov"  as keyof CountryStats },
-    { metric: "Флот",      key: "naval_innov" as keyof CountryStats },
-    { metric: "ВВП",       key: "gdp"         as keyof CountryStats },
+    { metric: "ВВП на душу населения",  key: "gdp_per_cap"     as keyof CountryStats },
+    { metric: "Грамот.",  key: "literacy"         as keyof CountryStats },
+    { metric: "Индустр.", key: "industrial_level" as keyof CountryStats },
+    { metric: "Армия",    key: "army_innov"       as keyof CountryStats },
+    { metric: "Флот",     key: "naval_innov"      as keyof CountryStats },
+    { metric: "ВВП",      key: "gdp"              as keyof CountryStats },
   ].map(({ metric, key }) => {
     const max = getMax(key)
     const row: any = { metric }
@@ -49,17 +82,17 @@ export function CompareView({ data }: Props) {
   })
 
   const tableRows: { label: string; key: keyof CountryStats; format?: (v: number) => string }[] = [
-    { label: "ВВП (£)",            key: "gdp",              format: fmt },
-    { label: "ВВП / капиту",       key: "gdp_per_cap",      format: v => v.toFixed(3) },
-    { label: "Население",           key: "population",       format: fmt },
-    { label: "Грамотность %",       key: "literacy",         format: v => v.toFixed(1) + "%" },
-    { label: "Инд. мощь %",         key: "industrial_level",        format: v => (v * 100).toFixed(1) + "%" },
-    { label: "Коэф. Джини",         key: "gini",             format: v => v.toFixed(3) },
-    { label: "Безраб. фабрик %",    key: "fabric_unemployement", format: v => v.toFixed(1) + "%" },
-    { label: "Армейские техн.",     key: "army_innov",       format: v => v + " / 20" },
-    { label: "Морские техн.",       key: "naval_innov",      format: v => v + " / 30" },
-    { label: "Наземный бюджет (£)", key: "military_budget",  format: fmt },
-    { label: "Морской бюджет (£)",  key: "naval_budget",     format: fmt },
+    { label: "ВВП (£)",            key: "gdp",                  format: fmt },
+    { label: "ВВП на душу населения",    key: "gdp_per_cap",          format: v => v.toFixed(3) },
+    { label: "Население",          key: "population",           format: fmt },
+    { label: "Грамотность %",      key: "literacy",             format: v => v.toFixed(1) + "%" },
+    { label: "Инд. мощь %",        key: "industrial_level",     format: v => (v * 100).toFixed(1) + "%" },
+    { label: "Коэф. Джини",        key: "gini",                 format: v => v.toFixed(3) },
+    { label: "Безраб. фабрик %",   key: "fabric_unemployement", format: v => v.toFixed(1) + "%" },
+    { label: "Армейские техн.",    key: "army_innov",           format: v => v + " / 40" },
+    { label: "Морские техн.",      key: "naval_innov",          format: v => v + " / 40" },
+    { label: "Наземный бюджет (£)",key: "military_budget",      format: fmt },
+    { label: "Морской бюджет (£)", key: "naval_budget",         format: fmt },
   ]
 
   const tooltipStyle = {
@@ -70,6 +103,36 @@ export function CompareView({ data }: Props) {
   return (
     <div className="compare-view">
       <h2 className="compare-title">{tags.join(" · ")}</h2>
+
+      {/* Топ рейтинги */}
+      <div className="charts-grid">
+        {rankings.map(({ title, sorted, getNum, getValue }) => {
+          const maxVal = getNum(sorted[0]) || 1
+          return (
+            <div key={title} className="chart-card">
+              <div className="chart-title">{title}</div>
+              {sorted.map((tag, i) => {
+                const val = getNum(tag) || 0
+                const pct = Math.round(val / maxVal * 100)
+                return (
+                  <div key={tag} style={{ marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ color: "#555", fontSize: 11, width: 16 }}>#{i + 1}</span>
+                        <span style={{ color: COLORS[tags.indexOf(tag)], fontSize: 13, fontFamily: "monospace", fontWeight: 700 }}>{tag}</span>
+                      </div>
+                      <span style={{ color: "#ccc", fontSize: 12 }}>{getValue(tag)}</span>
+                    </div>
+                    <div style={{ height: 5, background: "#1a1d27", borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: COLORS[tags.indexOf(tag)], borderRadius: 3 }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
 
       <div className="charts-grid">
         {/* Радар */}
@@ -91,7 +154,7 @@ export function CompareView({ data }: Props) {
 
         {/* Экономика */}
         <div className="chart-card">
-          <div className="chart-title">Экономика (£)</div>
+          <div className="chart-title">ВВП (£)</div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={econData}>
               <XAxis dataKey="metric" tick={{ fill: "#666", fontSize: 12 }} axisLine={false} tickLine={false} />

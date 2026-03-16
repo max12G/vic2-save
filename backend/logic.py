@@ -10,6 +10,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from get_fabric_req import stats
 
+def _get_base_dir():
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+_here = _get_base_dir()
+
 def get_needs_goods(data):
     goods = {}
     if data is None:
@@ -20,7 +27,7 @@ def get_needs_goods(data):
 
 def get_weights():
     weigshts = {}
-    saves_dir = "backend\data\poptypes" 
+    saves_dir = os.path.join(_here, "data", "poptypes")
     for file in os.listdir(saves_dir):
         if file.endswith(".txt"):
             with open(os.path.join(saves_dir, file), "r", encoding="windows-1252", errors="ignore") as f:
@@ -508,7 +515,7 @@ def fabric_uneployement(tag):
 
 def rgo_uneployement(tag):
     return max(0, round((getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag) - get_rgo_employed(tag)) /\
-                 (getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag)) * 100, 2))
+                 (getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag) * 100 + 1), 2))
 
 def get_fabric_salary_spendings(tag):
     
@@ -545,7 +552,7 @@ def get_avg_capilatils_salary(tag):
     
 def get_economy_producing_podrobno(tag):
     if tag not in data:
-        return 0
+        return (0, 0)
     states = data[tag].find_all("state")
     good_produce = {}
     goods_pricing = {}
@@ -581,8 +588,9 @@ def get_economy_producing_podrobno(tag):
             good = list(fab_stats[1].keys())[0]
             amount = real_income / world_goods_price[good]
             good_produce[good] = good_produce.get(good, 0) + amount
-            goods_pricing[good] = goods_pricing.get(good, 0) + (amount * world_goods_price[good])
-
+            goods_pricing[good] = goods_pricing.get(good, 0) + (amount * world_goods_price[good] / 1000)
+    if goods_pricing == {}:
+        return (0, 0)
     return good_produce, goods_pricing
 
 def get_economy_demand_podrobno(tag):
@@ -688,6 +696,8 @@ def get_naval_budget(tag):
 
 def get_diversification_ind(tag):
     res = get_economy_producing_podrobno(tag)[1]
+    if res=={}:
+        return 0
     top3 = sorted(res.items(), key=lambda x: x[1], reverse=True)[:3]
     total = 0
     for _, amount in top3:
@@ -940,6 +950,8 @@ def get_bank_savings(tag):
 def get_pop_spendings(tag):
     pass
 
+def country_exists(tag):
+    return get_country_size(tag) != 0
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
     def parse_victoria2_save(file_path):
@@ -956,5 +968,7 @@ if __name__ == "__main__":
             print(f"Ошибка при парсинге: {e}")
             return None
         
-    data = parse_victoria2_save("backend\data\siiiey1918_01_11.v2")
+    data = parse_victoria2_save("backend\data\Dinney2005_08_29.v2")
     world_goods_price = data["worldmarket"]["price_pool"]
+    # print(get_economy_producing_podrobno("JAP"))
+    # print(get_diversification_ind("USA"))
