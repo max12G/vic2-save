@@ -1,15 +1,15 @@
-# Web server
 fastapi==0.135.1
 uvicorn==0.41.0
+pillow==12.1.1
+pydantic==2.12.5
 
-# Data & math (logic.py)
 numpy==2.4.2
 pandas==3.0.0
 matplotlib==3.10.8
 tqdm==4.67.3
 
-# Victoria 2 file parser
 pyradox-txt-parser==5.0.1
 
-# Utils
 requests==2.32.5
+
+pyinstaller==6.19.0
