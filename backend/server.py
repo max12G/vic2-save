@@ -5,6 +5,8 @@ import re
 from pyradox import txt as pyradox_txt
 from pyradox.datatype import time as pyradox_time
 import logic
+from sort_functions import SORT_FUNCS, safe_sort
+
 
 
 app = FastAPI()
@@ -26,7 +28,7 @@ def parse_victoria2_save(file_path):
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
-
+    
 
 @app.post("/load")
 def load_save(body: LoadRequest):
@@ -35,14 +37,17 @@ def load_save(body: LoadRequest):
     world_goods_price = data["worldmarket"]["price_pool"]
     logic.data = data
     logic.world_goods_price = world_goods_price
-    countries = [str(k) for k in logic.data.keys()
-                 if len(str(k)) == 3 and str(k).isalpha() and str(k).isupper()]
-    countries.sort(key=logic.getGDP, reverse=True)
-    countries = list(filter(logic.country_exists, countries))
-    #C:/Users/User/Documents/parser/vic2-save/backend/data/siiiey1918_01_11.v2
-    #C:/Users/User/Documents/parser/vic2-save/backend/data/Dinney2004_01_01.v2
-    #C:/Users/User/Documents/parser/vic2-save/backend/data/Dinney2005_08_29.v2
-    return {"countries": countries}
+    logic.countries = [str(k) for k in logic.data.keys()
+                 if len(str(k)) == 3 and str(k).isalpha() and str(k).isupper() and logic.country_exists(tag=k)]
+    #C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2004_01_01.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2005_08_29.v2
+    return f"loaded {len(logic.countries)} countries"
+
+@app.get("/countries")
+def get_countries(sort_met: str = "gdp", ascendic: bool = False):
+    logic.countries.sort(key=lambda x: safe_sort(sort_met=sort_met, tag=x), reverse=not ascendic)
+    return {"countries": logic.countries}
 
 @app.get("/stats/{tag}")
 def get_stats(tag: str):
@@ -59,6 +64,10 @@ def get_stats(tag: str):
         "subside_pct":  logic.get_subside_ind(tag),
         "diversification": logic.get_diversification_ind(tag),
         "gold_income": logic.get_gold_mining(tag),
+        "country_savings": logic.get_country_savings(tag),
+        "bank_savings": logic.get_bank_savings(tag),
+        "population_savings": logic.get_all_pop_money(tag),
+        "money_mass": logic.get_money_mass(tag),
         "gini":         logic.real_gini(tag),
         "fabric_employee": logic.get_employed_fabric(tag),
         "fabric_unemployement": logic.fabric_uneployement(tag),
@@ -88,8 +97,9 @@ def compare(tags: str):
 if __name__ == "__main__":
     import uvicorn
     import traceback
-    try:
+    uvicorn.run("server:app", host="localhost", port=8000, reload=True)
+    '''try:
         uvicorn.run(app, host="localhost", port=8000, log_level="warning")
     except Exception as e:
         with open("server_error.log", "w") as f:
-            f.write(traceback.format_exc())
+            f.write(traceback.format_exc())'''

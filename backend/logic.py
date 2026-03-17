@@ -10,6 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from get_fabric_req import stats
 
+countries = []
+
+
 def _get_base_dir():
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
@@ -696,7 +699,7 @@ def get_naval_budget(tag):
 
 def get_diversification_ind(tag):
     res = get_economy_producing_podrobno(tag)[1]
-    if res=={}:
+    if res=={} or res == 0:
         return 0
     top3 = sorted(res.items(), key=lambda x: x[1], reverse=True)[:3]
     total = 0
@@ -946,6 +949,9 @@ def get_bank_savings(tag):
         return 0
     bank = data[tag]["bank"]
     return round(bank["money"] + bank["money_lent"], 2)
+
+def get_all_mil_budget(tag):
+    return get_army_budget(tag) + get_naval_budget(tag)
 
 def get_pop_spendings(tag):
     pass

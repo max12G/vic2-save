@@ -32,7 +32,7 @@ body {
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 165px;
+  width: 180px;
   min-width: 165px;
   background: var(--bg2);
   border-right: 1px solid var(--border);
@@ -444,6 +444,78 @@ body {
 .stat-label {
   font-size: 12px;
   color: #666;
+}
+
+.sort-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sort-select {
+  flex: 1;
+  padding: 5px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+
+.sort-select:focus { border-color: var(--accent); }
+
+.sort-dir-btn {
+  padding: 5px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sort-dir-btn:hover {
+  background: #22253a;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── Sort ── */
+.sort-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sort-select {
+  flex: 1;
+  padding: 5px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+.sort-select:focus { border-color: var(--accent); }
+
+.sort-dir-btn {
+  padding: 5px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sort-dir-btn:hover {
+  background: #22253a;
+  color: var(--accent);
 }
 
 .recharts-rectangle.recharts-bar-bg {

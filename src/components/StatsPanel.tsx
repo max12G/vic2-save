@@ -134,7 +134,15 @@ export function StatsPanel({ stats }: Props) {
             <div style={{ width: 3, height: 40, background: `linear-gradient(180deg, ${GREEN}, ${GOLD})`, borderRadius: 2 }} />
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 3 }}>
-                <h2 style={{ margin: 0, fontFamily: "monospace", fontSize: 24, color: "#fff", letterSpacing: 4 }}>{stats.tag}</h2>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <img
+                    src={`/flags/${stats.tag}.png`}
+                    alt={stats.tag}
+                    style={{ height: 32, border: "1px solid #2A3A5A", borderRadius: 3 }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                  />
+                  <h2 style={{ margin: 0, fontFamily: "monospace", fontSize: 24, color: "#fff", letterSpacing: 4 }}>{stats.tag}</h2>
+                </div>
                 <span style={{ background: `${GOLD}22`, color: GOLD, fontSize: 10, padding: "2px 10px", borderRadius: 4, letterSpacing: 1 }}>{stats.goverement || "—"}</span>
               </div>
               <div style={{ color: "#2A3A5A", fontSize: 10, letterSpacing: 2 }}>VICTORIA II · {stats.country_size} РЕГИОНОВ</div>
@@ -161,6 +169,7 @@ export function StatsPanel({ stats }: Props) {
             { id: "overview",  label: "Обзор" },
             { id: "economy",   label: "Экономика" },
             { id: "industry",  label: "Промышленность" },
+            { id: "finance", label: "Финансы" },
             { id: "military",  label: "Военное" },
             { id: "social",    label: "Социальное" },
           ].map(t => <TabBtn key={t.id} {...t} active={tab === t.id} onClick={setTab} />)}
@@ -299,6 +308,74 @@ export function StatsPanel({ stats }: Props) {
                   <StatRow label="Средний доход капиталиста"   value={fmt(stats.capitalist_salary) + " £"} color={GOLD} />
                   <StatRow label="Валовый выпуск"     value={fmt(stats.supply) + " £"} />
                   <StatRow label="Потребление"        value={fmt(stats.consuption) + " £"} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        {/* ── FINANCE ── */}
+        {tab === "finance" && (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+              <KpiCard label="Казна"          value={fmt(stats.country_savings) + " £"} color={GOLD} />
+              <KpiCard label="Банк"           value={fmt(stats.bank_savings) + " £"}    color={BLUE} />
+              <KpiCard label="Денежная масса" value={fmt(stats.money_mass) + " £"}      color={GREEN} />
+              <KpiCard label="Золотодобыча"   value={fmt(stats.gold_income) + " £"}     color={ORANGE} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
+                <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 14 }}>СТРУКТУРА ДЕНЕЖНОЙ МАССЫ</div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={[
+                    { name: "Казна",   value: Number(stats.country_savings) },
+                    { name: "Банк",    value: Number(stats.bank_savings) },
+                    { name: "Всего",   value: Number(stats.money_mass) },
+                  ]} barSize={60} margin={{ top: 24, right: 20, left: 0, bottom: 0 }}>
+                    <CartesianGrid stroke={BORDER} strokeDasharray="3 3" />
+                    <XAxis dataKey="name" tick={{ fill: "#3A4A6A", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={fmt} tick={{ fill: "#3A4A6A", fontSize: 10 }} axisLine={false} tickLine={false} width={50} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} name="£" fill={BLUE}
+                      label={{ position: "top", formatter: fmt, fill: "#666", fontSize: 11 }}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
+                <div style={{ color: GOLD, fontSize: 10, letterSpacing: 2, marginBottom: 14 }}>ФИНАНСОВЫЕ ПОКАЗАТЕЛИ</div>
+                <StatRow label="Казна"               value={fmt(stats.country_savings) + " £"} color={GOLD} />
+                <StatRow label="Запасы банка"        value={fmt(stats.bank_savings) + " £"}       color={BLUE} />
+                <StatRow label="Запасы населения"        value={fmt(stats.population_savings) + " £"}       color={BLUE} />
+                <StatRow label="Общая денежная масса" value={fmt(stats.money_mass) + " £"}        color={GREEN} />
+                <StatRow label="Золотодобыча"        value={fmt(stats.gold_income) + " £"}        color={ORANGE} />
+                <StatRow label="Скорость обращения накоплений"     value={fix(Number(stats.money_activity) * 100, 2)} />
+                <StatRow label="ВВП"                 value={fmt(stats.gdp) + " £"} />
+
+                {/* Доля казны в денежной массе */}
+                <div style={{ marginTop: 14 }}>
+                  <ProgressRow
+                    label="Доля казны в денежной массе"
+                    value={Number(stats.country_savings)}
+                    max={Number(stats.money_mass) || 1}
+                    color={GOLD}
+                    valLabel={fix(Number(stats.country_savings) / (Number(stats.money_mass) || 1) * 100) + "%"}
+                  />
+                  <ProgressRow
+                    label="Доля банка в денежной массе"
+                    value={Number(stats.bank_savings)}
+                    max={Number(stats.money_mass) || 1}
+                    color={BLUE}
+                    valLabel={fix(Number(stats.bank_savings) / (Number(stats.money_mass) || 1) * 100) + "%"}
+                  />
+                  <ProgressRow
+                    label="Доля человеческих накоплений в денежной массе"
+                    value={Number(stats.population_savings)}
+                    max={Number(stats.money_mass) || 1}
+                    color={BLUE}
+                    valLabel={fix(Number(stats.population_savings) / (Number(stats.money_mass) || 1) * 100) + "%"}
+                  />
                 </div>
               </div>
             </div>

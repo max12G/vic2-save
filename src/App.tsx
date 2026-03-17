@@ -16,18 +16,29 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json()
 }
 
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__?: unknown
-  }
-}
-
 type View = "stats" | "compare"
+
+const SORT_OPTIONS = [
+  { value: "gdp",             label: "ВВП" },
+  { value: "population",      label: "Население" },
+  { value: "gdp_per_cap",     label: "ВВП на душу населения" },
+  { value: "literacy",        label: "Грамотность" },
+  { value: "industrial_gdp",  label: "Индустриальное ВВП" },
+  { value: "natural_gdp",     label: "ВВП с/x" },
+  { value: "size",            label: "Территории" },
+  { value: "army_budget",     label: "Общий военный бюджет" },
+]
+
+declare global {
+  interface Window { __TAURI_INTERNALS__?: unknown }
+}
 
 export default function App() {
   const [saveLoaded, setSaveLoaded] = useState(false)
   const [countries, setCountries] = useState<string[]>([])
   const [search, setSearch] = useState("")
+  const [sortBy, setSortBy] = useState("gdp")
+  const [ascending, setAscending] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<string>("")
   const [stats, setStats] = useState<CountryStats | null>(null)
   const [compareStats, setCompareStats] = useState<Record<string, CountryStats>>({})
@@ -37,29 +48,38 @@ export default function App() {
   const [statsLoading, setStatsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  async function handleOpenFile() {
-  let path: string | null = null
-
-    if (window.__TAURI_INTERNALS__) {
-    path = await open({
-      filters: [{ name: "Victoria 2 Save", extensions: ["v2"] }],
-      multiple: false,
-    }) as string | null
-  } else {
-    path = prompt("Путь к .v2 файлу:")
+  async function loadCountries(sort: string, asc: boolean) {
+    try {
+      const result = await apiFetch<LoadResult>(
+        `/countries?sort_met=${sort}&ascendic=${asc}`
+      )
+      setCountries(result.countries)
+    } catch (e: any) {
+      setError(e.message)
+    }
   }
 
-  if (!path) return
+  async function handleOpenFile() {
+    let path: string | null = null
+    if (window.__TAURI_INTERNALS__) {
+      path = await open({
+        filters: [{ name: "Victoria 2 Save", extensions: ["v2"] }],
+        multiple: false,
+      }) as string | null
+    } else {
+      path = prompt("Путь к .v2 файлу:")
+    }
+    if (!path) return
 
     setLoading(true)
     setError("")
     try {
-      const result = await apiFetch<LoadResult>("/load", {
+      await apiFetch("/load", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path }),
       })
-      setCountries(result.countries)
+      await loadCountries(sortBy, ascending)
       setSaveLoaded(true)
       setStats(null)
       setSelectedCountry("")
@@ -67,6 +87,17 @@ export default function App() {
       setError(e.message)
     }
     setLoading(false)
+  }
+
+  async function handleSortChange(newSort: string) {
+    setSortBy(newSort)
+    await loadCountries(newSort, ascending)
+  }
+
+  async function handleToggleAscending() {
+    const newAsc = !ascending
+    setAscending(newAsc)
+    await loadCountries(sortBy, newAsc)
   }
 
   async function handleSelectCountry(tag: string) {
@@ -122,12 +153,32 @@ export default function App() {
             {loading ? "Загрузка..." : "Открыть .v2"}
           </button>
           {saveLoaded && (
-            <input
-              className="search-input"
-              placeholder="Поиск страны..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+            <>
+              <input
+                className="search-input"
+                placeholder="Поиск страны..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <div className="sort-row">
+                <select
+                  className="sort-select"
+                  value={sortBy}
+                  onChange={e => handleSortChange(e.target.value)}
+                >
+                  {SORT_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                <button
+                  className="sort-dir-btn"
+                  onClick={handleToggleAscending}
+                  title={ascending ? "По возрастанию" : "По убыванию"}
+                >
+                  {ascending ? "↑" : "↓"}
+                </button>
+              </div>
+            </>
           )}
         </div>
 
@@ -141,6 +192,12 @@ export default function App() {
                 }`}
                 onClick={() => handleSelectCountry(tag)}
               >
+                <img
+                  src={`/flags/${tag}.png`}
+                  alt={tag}
+                  style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2, marginRight: 6, verticalAlign: "middle" }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                />
                 {tag}
               </div>
             ))}

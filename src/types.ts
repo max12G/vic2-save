@@ -12,6 +12,10 @@ export interface CountryStats {
   subside_pct: number
   diversification: number
   gold_income: number
+  country_savings: number
+  bank_savings: number
+  population_savings: number
+  money_mass: number
   gini: number
   fabric_employee: number
   fabric_unemployement: number
