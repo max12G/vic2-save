@@ -631,3 +631,12 @@ body {
 }
 .modal-btn:hover { background: #254a7a; }
 .modal-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+
+.recharts-rectangle.recharts-bar-bg {
+  fill: transparent !important;
+}
+
+.recharts-rectangle.recharts-tooltip-cursor {
+  fill: transparent !important;
+}
