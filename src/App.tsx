@@ -47,6 +47,23 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [statsLoading, setStatsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showModModal, setShowModModal] = useState(false)
+  const [modPath, setModPath] = useState("")
+  const [modStatus, setModStatus] = useState("")
+  const [modLoading, setModLoading] = useState(false)
+
+  async function handleLoadMod() {
+    if (!modPath.trim()) return
+    setModLoading(true)
+    setModStatus("")
+    try {
+      await apiFetch(`/mods?src=${encodeURIComponent(modPath)}`)
+      setModStatus("✓ Флаги мода загружены успешно")
+    } catch (e: any) {
+      setModStatus("✗ Ошибка: " + e.message)
+    }
+    setModLoading(false)
+  }
 
   async function loadCountries(sort: string, asc: boolean) {
     try {
@@ -147,11 +164,57 @@ export default function App() {
 
   return (
     <div className="app">
+
+      {/* Модальное окно мода */}
+      {showModModal && (
+        <div className="modal-overlay" onClick={() => setShowModModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span>Загрузка контента мода</span>
+              <button className="modal-close" onClick={() => setShowModModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-desc">
+                Укажи путь к папке <code>gfx/flags</code> мода — флаги будут сконвертированы и добавлены в приложение.
+              </p>
+              <label className="modal-label">Путь к папке с флагами (.tga)</label>
+              <input
+                className="modal-input"
+                placeholder="C:\Victoria2\mod\MyMod\gfx\flags"
+                value={modPath}
+                onChange={e => setModPath(e.target.value)}
+              />
+              {modStatus && (
+                <div className={`modal-status ${modStatus.startsWith("✓") ? "ok" : "err"}`}>
+                  {modStatus}
+                </div>
+              )}
+              <button
+                className="modal-btn"
+                onClick={handleLoadMod}
+                disabled={modLoading || !modPath.trim()}
+              >
+                {modLoading ? "Конвертируем..." : "Загрузить флаги"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <aside className="sidebar">
         <div className="sidebar-header">
-          <button className="btn-open" onClick={handleOpenFile} disabled={loading}>
-            {loading ? "Загрузка..." : "Открыть .v2"}
-          </button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button className="btn-open" style={{ flex: 1 }} onClick={handleOpenFile} disabled={loading}>
+              {loading ? "Загрузка..." : "Открыть .v2"}
+            </button>
+            <button
+              className="btn-mod"
+              onClick={() => setShowModModal(true)}
+              title="Загрузить мод"
+            >
+              ⚙
+            </button>
+          </div>
           {saveLoaded && (
             <>
               <input

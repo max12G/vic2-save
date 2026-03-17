@@ -1,10 +1,8 @@
 from PIL import Image
 import os
 
-src = r"backend\data\flags"
-dst = r"backend\data\flags"
 
-def convert_files():
+def convert_files(src, dst = r"public\flags"):
     for file in os.listdir(src):
         if file.endswith(".tga"):
             img = Image.open(os.path.join(src, file))
@@ -15,9 +13,11 @@ def convert_files():
             except :
                 pass
             print(f"✓ {name}")
-    for file in os.listdir(src):
+    for file in os.listdir(dst):
         if "_" in file:
-            os.remove(os.path.join(src, file))
+            os.remove(os.path.join(dst, file))
             print(f"DELETED {file}")
 
-convert_files()
+
+if __name__ == "__main__":
+    convert_files(r"C:\Games\Victoria 2 Heart of Darkness\gfx\flags")

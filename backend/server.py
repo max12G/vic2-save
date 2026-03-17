@@ -6,6 +6,7 @@ from pyradox import txt as pyradox_txt
 from pyradox.datatype import time as pyradox_time
 import logic
 from sort_functions import SORT_FUNCS, safe_sort
+from dev_funcs import convert_files
 
 
 
@@ -48,6 +49,12 @@ def load_save(body: LoadRequest):
 def get_countries(sort_met: str = "gdp", ascendic: bool = False):
     logic.countries.sort(key=lambda x: safe_sort(sort_met=sort_met, tag=x), reverse=not ascendic)
     return {"countries": logic.countries}
+
+@app.get("/mods")
+def get_mod_flags(src: str = ""):
+    if src:
+        convert_files(src=src)
+    return
 
 @app.get("/stats/{tag}")
 def get_stats(tag: str):
