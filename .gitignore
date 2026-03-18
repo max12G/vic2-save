@@ -59,3 +59,4 @@ src-tauri/target/
 
 *.log
 .DS_Store
+backend/app/server.spec

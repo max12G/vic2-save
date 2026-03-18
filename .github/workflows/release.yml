@@ -37,7 +37,7 @@ jobs:
         
       - name: Build Python server
         run: |
-          cd backend/app
+          cd backend
           python -m PyInstaller --onefile --name server `
             --add-data "data;data" `
             --hidden-import=pyradox `
@@ -51,7 +51,8 @@ jobs:
             --hidden-import=uvicorn.protocols.http.auto `
             --hidden-import=uvicorn.lifespan `
             --hidden-import=uvicorn.lifespan.on `
-            server.py
+            app/server.py
+            cd ..
           copy dist\server.exe ..\src-tauri\binaries\server-x86_64-pc-windows-msvc.exe
       - name: Build Tauri app
         run: |
