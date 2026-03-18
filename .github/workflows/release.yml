@@ -31,8 +31,9 @@ jobs:
       
       - name: Run Tests
         run:
+          cd backend
           pip install -r requirements.txt
-          python -m pytest backend/tests/test.py
+          python -m pytest tests/test.py
         
       - name: Build Python server
         run: |
