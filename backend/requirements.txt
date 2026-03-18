@@ -13,3 +13,4 @@ pyradox-txt-parser==5.0.1
 requests==2.32.5
 
 pyinstaller==6.19.0
+pytest==9.0.2

@@ -32,7 +32,7 @@ body {
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 165px;
+  width: 220px;
   min-width: 165px;
   background: var(--bg2);
   border-right: 1px solid var(--border);

@@ -5,8 +5,8 @@ on:
       - 'v*'
 jobs:
   build-windows:
+    permissions: write-all
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,9 +28,14 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+      
+      - name: Run Tests
+        run:
+          pip install -r requirements.txt
+          python -m pytest backend/tests/test.py
+        
       - name: Build Python server
         run: |
-          pip install -r requirements.txt
           cd backend
           python -m PyInstaller --onefile --name server `
             --add-data "data;data" `

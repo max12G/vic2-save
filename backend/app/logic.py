@@ -8,17 +8,12 @@ import tqdm
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from get_fabric_req import stats
+from .get_fabric_req import stats
 
 countries = []
 
-
-def _get_base_dir():
-    if getattr(sys, 'frozen', False):
-        return sys._MEIPASS
-    return os.path.dirname(os.path.abspath(__file__))
-
-_here = _get_base_dir()
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
 
 def get_needs_goods(data):
     goods = {}
@@ -30,7 +25,7 @@ def get_needs_goods(data):
 
 def get_weights():
     weigshts = {}
-    saves_dir = os.path.join(_here, "data", "poptypes")
+    saves_dir = os.path.join(parent_dir, "data", "poptypes")
     for file in os.listdir(saves_dir):
         if file.endswith(".txt"):
             with open(os.path.join(saves_dir, file), "r", encoding="windows-1252", errors="ignore") as f:
@@ -958,9 +953,10 @@ def get_pop_spendings(tag):
 
 def country_exists(tag):
     return get_country_size(tag) != 0
-if __name__ == "__main__":
-    sys.setrecursionlimit(10000)
-    def parse_victoria2_save(file_path):
+
+
+
+def parse_victoria2_save(file_path):
         try:
             with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
                 content = f.read()
@@ -973,8 +969,12 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Ошибка при парсинге: {e}")
             return None
+
+
+if __name__ == "__main__":
+    sys.setrecursionlimit(10000)
         
-    data = parse_victoria2_save("backend\data\Dinney2005_08_29.v2")
+    data = parse_victoria2_save(r"backend\test_data\Dinney2005_08_29.v2")
     world_goods_price = data["worldmarket"]["price_pool"]
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

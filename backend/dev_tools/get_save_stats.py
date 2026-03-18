@@ -5,7 +5,7 @@ import pandas as pd
 import time
 import tqdm
 import os
-import logic
+import backend.app.logic as logic
 sys.setrecursionlimit(1000)
 
 def parse_victoria2_save(file_path):

@@ -1,6 +1,6 @@
 import os
 import tqdm
-import logic
+import backend.app.logic as logic
 import pandas as pd
 import pyradox
 import re
