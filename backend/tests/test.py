@@ -3,13 +3,11 @@ import sys
 import os
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir) 
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(os.path.join(parent_dir, "app"))
 
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-
-from app.logic import parse_victoria2_save
-from app import server
+from logic import parse_victoria2_save
+import server
 
 class Request:
     path: str = "gdp"

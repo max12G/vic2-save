@@ -4,9 +4,9 @@ from pydantic import BaseModel
 import re
 from pyradox import txt as pyradox_txt
 from pyradox.datatype import time as pyradox_time
-from . import logic
-from .sort_functions import SORT_FUNCS, safe_sort
-from .flags_convert import convert_files
+import logic
+from sort_functions import SORT_FUNCS, safe_sort
+from flags_convert import convert_files
 
 
 

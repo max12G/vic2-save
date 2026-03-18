@@ -1,4 +1,4 @@
-from . import logic
+import logic
 
 SORT_FUNCS = {
     "gdp": logic.getGDP,
