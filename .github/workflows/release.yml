@@ -33,7 +33,7 @@ jobs:
         run:
           cd backend
           pip install -r requirements.txt
-          python -m pytest tests/test.py
+          pytest tests/test.py
         
       - name: Build Python server
         run: |
