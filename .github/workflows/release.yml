@@ -51,6 +51,10 @@ jobs:
             --hidden-import=uvicorn.protocols.http.auto `
             --hidden-import=uvicorn.lifespan `
             --hidden-import=uvicorn.lifespan.on `
+            --hidden-import=logic `
+            --hidden-import=get_fabric_req `
+            --hidden-import=flags_convert `
+            --hidden-import=sort_functions `
             app/server.py
           copy dist\server.exe ..\src-tauri\binaries\server-x86_64-pc-windows-msvc.exe
       - name: Build Tauri app
