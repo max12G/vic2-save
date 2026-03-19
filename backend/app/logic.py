@@ -25,7 +25,7 @@ def get_needs_goods(data):
 
 def get_weights():
     weigshts = {}
-    saves_dir = os.path.join(parent_dir, "data", "poptypes")
+    saves_dir = os.path.join(current_dir, "data", "poptypes")
     for file in os.listdir(saves_dir):
         if file.endswith(".txt"):
             with open(os.path.join(saves_dir, file), "r", encoding="windows-1252", errors="ignore") as f:

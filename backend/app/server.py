@@ -104,9 +104,9 @@ def compare(tags: str):
 if __name__ == "__main__":
     import uvicorn
     import traceback
-    uvicorn.run("server:app", host="localhost", port=8000, reload=True)
-    '''try:
+    #uvicorn.run("server:app", host="localhost", port=8000, reload=True)
+    try:
         uvicorn.run(app, host="localhost", port=8000, log_level="warning")
     except Exception as e:
         with open("server_error.log", "w") as f:
-            f.write(traceback.format_exc())'''
+            f.write(traceback.format_exc())

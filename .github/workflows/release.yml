@@ -37,7 +37,7 @@ jobs:
         
       - name: Build Python server
         run: |
-          cd backend
+          cd backend\app
           python -m PyInstaller --onefile --name server `
             --add-data "data;data" `
             --hidden-import=pyradox `
@@ -55,8 +55,10 @@ jobs:
             --hidden-import=get_fabric_req `
             --hidden-import=flags_convert `
             --hidden-import=sort_functions `
-            app/server.py
-          copy dist\server.exe ..\src-tauri\binaries\server-x86_64-pc-windows-msvc.exe
+            server.py
+            cd ..
+          copy app\dist\server.exe ..\src-tauri\binaries\server-x86_64-pc-windows-msvc.exe
+          cd ..
       - name: Build Tauri app
         run: |
           npm install
