@@ -104,9 +104,14 @@ def compare(tags: str):
 if __name__ == "__main__":
     import uvicorn
     import traceback
-    #uvicorn.run("server:app", host="localhost", port=8000, reload=True)
+    import sys
+    is_frozen = getattr(sys, 'frozen', False)
     try:
-        uvicorn.run(app, host="localhost", port=8000, log_level="warning")
-    except Exception as e:
+        if not is_frozen:
+            uvicorn.run("server:app", host="localhost", port=8000, reload=True, log_level="info")
+        else:
+            from server import app 
+            uvicorn.run(app, host="localhost", port=8000, log_level="warning")
+    except Exception:
         with open("server_error.log", "w") as f:
             f.write(traceback.format_exc())
