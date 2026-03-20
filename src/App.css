@@ -401,8 +401,8 @@ body {
   font-size: 18px;
   font-weight: 400;
   color: var(--text-muted);
-  font-family: Georgia, serif;
-  font-style: italic;
+  font-family: var(--text);
+  font-style: var(--font-style);
   letter-spacing: 2px;
 }
 

@@ -15,7 +15,6 @@ pub fn run() {
 
             #[cfg(not(debug_assertions))]
             {
-                // resource_dir — туда Tauri копирует файлы из bundle.resources
                 let resource_dir = app.path().resource_dir().ok();
                 let exe_dir = std::env::current_exe()
                     .ok()
