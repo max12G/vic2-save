@@ -8,17 +8,20 @@ import {
 
 interface Props { stats: CountryStats }
 
-const GOLD   = "#C9A84C"
-const GOLD2  = "#8B6914"
-const GREEN  = "#7A9A4A"
-const RED    = "#A83A2A"
-const BLUE   = "#4A7A9A"
-const ORANGE = "#C8623A"
-const PANEL  = "#0f0c08"
-const BORDER = "#3a2e1e"
-const BORDER2 = "#2a1e10"
-const TEXT   = "#c8b89a"
-const TEXTDIM = "#5a4a30"
+const GOLD   = "var(--gold)"
+const GOLD2  = "var(--gold-dim)"
+const GREEN  = "var(--green)"
+const RED    = "var(--red)"
+const BLUE   = "var(--blue)"
+const ORANGE = "var(--orange)"
+const PANEL  = "var(--panel)"
+const BORDER = "var(--border)"
+const BORDER2 = "var(--border2)"
+const TEXT   = "var(--text)"
+const TEXTDIM = "var(--text-dim)"
+const BG     = "var(--bg)"
+
+
 
 function fmt(n: any): string {
   const v = Number(n)
@@ -135,11 +138,11 @@ export function StatsPanel({ stats }: Props) {
     { name: "Промежут. потребление",  value: Number(stats.consuption) },
   ]
 
-  const headerBg = "linear-gradient(90deg, #070503 0%, #0f0c08 50%, #070503 100%)"
+  const headerBg = "linear-gradient(90deg, BG 0%, BG 50%, BG 100%)"
   const cardStyle = { background: PANEL, border: `1px solid ${BORDER}`, padding: "16px 18px" }
 
   return (
-    <div style={{ background: "#0a0705", minHeight: "100%", color: TEXT, fontFamily: "Georgia, serif" }}>
+    <div style={{ background: BG, minHeight: "100%", color: TEXT, fontFamily: "Georgia, serif" }}>
 
       {/* HEADER */}
       <div style={{ background: headerBg, borderBottom: `1px solid ${BORDER}`, padding: 0 }}>
@@ -155,7 +158,7 @@ export function StatsPanel({ stats }: Props) {
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
                 />
                 <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 22, color: "#e8d5a8", letterSpacing: 4, fontStyle: "italic", fontWeight: 400 }}>{stats.tag}</h2>
-                <span style={{ background: "#1a1208", color: GOLD, fontSize: 10, padding: "2px 8px", border: `1px solid ${GOLD}44`, letterSpacing: 1 }}>{stats.goverement || "—"}</span>
+                <span style={{ background: BG, color: GOLD, fontSize: 10, padding: "2px 8px", border: `1px solid ${GOLD}44`, letterSpacing: 1 }}>{stats.goverement + " -- " + stats.most_popular_party || "undefined"}</span>
               </div>
               <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 2 }}>VICTORIA II · {stats.country_size} РЕГИОНОВ</div>
             </div>
@@ -321,7 +324,7 @@ export function StatsPanel({ stats }: Props) {
                     <StatRow label="Общая занятость"           value={fmt(stats.all_employemenent)} />
                     <StatRow label="Свободных мест"            value={fmt(stats.all_free_work_places)} />
                     <StatRow label="Средняя з/п рабочего"      value={fix(stats.fabric_worker_salary, 3) + " £"} />
-                    <StatRow label="Средний доход капиталиста"      value={fmt(stats.capitalist_salary) + " £"} color={GOLD} />
+                    <StatRow label="Средний доход капиталиста"      value={fmt(stats.capitalist_salary) + " £"} />
                     <StatRow label="Валовый выпуск"            value={fmt(stats.supply) + " £"} />
                     <StatRow label="Потребление"               value={fmt(stats.consuption) + " £"} />
                   </div>

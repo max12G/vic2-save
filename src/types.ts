@@ -33,6 +33,7 @@ export interface CountryStats {
   population_per_reg: number
   gdp_per_reg: number
   goverement: string
+  most_popular_party: string
 }
 
 export interface LoadResult {

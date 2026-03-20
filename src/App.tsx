@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { open } from "@tauri-apps/plugin-dialog"
 import { CountryStats, LoadResult } from "./types"
 import { StatsPanel } from "./components/StatsPanel"
@@ -17,6 +17,7 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 type View = "stats" | "compare"
+type Theme = "victorian" | "classic"
 
 const SORT_OPTIONS = [
   { value: "gdp",             label: "ВВП" },
@@ -51,8 +52,20 @@ export default function App() {
   const [modPath, setModPath] = useState("")
   const [modStatus, setModStatus] = useState("")
   const [modLoading, setModLoading] = useState(false)
+  const [theme, setTheme] = useState<Theme>("victorian")
+
+  const statsCache = useRef<Map<string, CountryStats>>(new Map())
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", theme)
+  }, [theme])
+
+  function toggleTheme() {
+    setTheme(prev => prev === "victorian" ? "classic" : "victorian")
+  }
 
   async function handleLoadMod() {
+    statsCache.current.clear()
     if (!modPath.trim()) return
     setModLoading(true)
     setModStatus("")
@@ -118,21 +131,24 @@ export default function App() {
   }
 
   async function handleSelectCountry(tag: string) {
-    if (view === "compare") {
-      toggleCompare(tag)
+    if (view === "compare") { toggleCompare(tag); return }
+    setSelectedCountry(tag)
+
+    if (statsCache.current.has(tag)) {
+      setStats(statsCache.current.get(tag)!)
       return
     }
-    setSelectedCountry(tag)
+
     setStatsLoading(true)
-    setError("")
     try {
       const data = await apiFetch<CountryStats>(`/stats/${tag}`)
+      statsCache.current.set(tag, data)
       setStats(data)
     } catch (e: any) {
       setError(e.message)
     }
     setStatsLoading(false)
-  }
+}
 
   function toggleCompare(tag: string) {
     setSelectedForCompare(prev =>
@@ -212,7 +228,14 @@ export default function App() {
               onClick={() => setShowModModal(true)}
               title="Загрузить мод"
             >
-              ⚙
+              ✦
+            </button>
+            <button
+              className="btn-mod"
+              onClick={toggleTheme}
+              title={theme === "victorian" ? "Классическая тема" : "Викторианская тема"}
+            >
+              {theme === "victorian" ? "◈" : "⚙"}
             </button>
           </div>
           {saveLoaded && (

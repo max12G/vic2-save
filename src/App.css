@@ -1,6 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
+
+:root, [data-theme="victorian"] {
   --bg:         #0a0705;
   --bg2:        #0f0c08;
   --bg3:        #070503;
@@ -18,14 +19,48 @@
   --panel:      #0f0c08;
   --gold:       #c9a84c;
   --gold-dim:   #8b6914;
+  --active:     #0a0705;
+  --font-main: 'Georgia', serif;
+  --font-mono: 'Courier New', monospace;
+  --font-heading: 'Old Standard TT', 'Georgia', serif;
+  --font-size-base: 13px;
+  --font-style: 'italic';
 }
+
+[data-theme="classic"] {
+  --bg:         #0f1117;
+  --bg2:        #1a1d27;
+  --bg3:        #12141a;
+  --border:     #2a2d3a;
+  --border2:    #1e2030;
+  --text:       #d0d0d0;
+  --text-dim:   #666;
+  --text-muted: #888;
+  --accent:     #4f8ef7;
+  --green:      #4ff79f;
+  --orange:     #f7954f;
+  --red:        #f74f4f;
+  --blue:       #4f8ef7;
+  --purple:     #c44ff7;
+  --panel:      #1a1d27;
+  --gold:       #4f8ef7;
+  --gold-dim:   #3a7ae6;
+  --active:     #12141a;
+  --font-main: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-heading: 'Helvetica Neue', Arial, sans-serif;
+  --font-size-base: 14px;
+  --font-style: 'normal';
+}
+
+
 
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 13px;
+  font-family: var(--font-main);
+  font-size: var(--font-size-base);
   overflow: hidden;
   height: 100vh;
 }
@@ -38,7 +73,7 @@ body {
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 240px;
+  width: 220px;
   min-width: 165px;
   background: var(--bg2);
   border-right: 1px solid var(--border);
@@ -58,17 +93,19 @@ body {
 .btn-open {
   width: 100%;
   padding: 8px;
-  background: #1a1208;
+  background: var(--bg1);
   color: var(--gold);
-  border: 1px solid #c9a84c55;
-  font-size: 11px;
-  font-family: Georgia, serif;
-  letter-spacing: 1px;
+  border: 1px solid var(--border);
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
   cursor: pointer;
   transition: background 0.15s;
   border-radius: 0;
 }
-.btn-open:hover { background: #241a0a; }
+.btn-open:hover { color: var(--gold); border-color: var(--gold); }
 .btn-open:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .search-input {
@@ -79,7 +116,7 @@ body {
   border-radius: 0;
   color: var(--text);
   font-size: 12px;
-  font-family: Georgia, serif;
+  font-family: var(--font-main);
   outline: none;
 }
 .search-input:focus { border-color: var(--gold); }
@@ -95,7 +132,7 @@ body {
 .country-item {
   padding: 6px 10px;
   cursor: pointer;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-muted);
   transition: all 0.1s;
@@ -103,8 +140,8 @@ body {
   display: flex;
   align-items: center;
 }
-.country-item:hover { color: var(--text); background: #1a1208; border-left-color: var(--gold-dim); }
-.country-item.active { color: var(--gold); border-left-color: var(--gold); background: #1a1208; }
+.country-item:hover { color: var(--text); background: var(--bg); border-left-color: var(--gold-dim); }
+.country-item.active { color: var(--gold); border-left-color: var(--bg); background: var(--bg); }
 .country-item.in-compare { color: var(--green); border-left-color: var(--green); background: #0f1808; }
 
 .sidebar-empty {
@@ -148,7 +185,9 @@ body {
   cursor: pointer;
   border: none;
   background: none;
-  font-family: Georgia, serif;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  text-transform: uppercase;
   transition: all 0.15s;
   border-bottom: 2px solid transparent;
 }
@@ -164,15 +203,17 @@ body {
 .compare-tags {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
 }
 .btn-compare {
   padding: 5px 14px;
   background: #0f1808;
   color: var(--green);
   border: 1px solid #3a5a20;
-  font-size: 11px;
-  font-family: Georgia, serif;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
   transition: background 0.15s;
   margin-left: auto;
@@ -185,8 +226,10 @@ body {
   background: none;
   color: var(--text-dim);
   border: 1px solid var(--border);
-  font-size: 11px;
-  font-family: Georgia, serif;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
   border-radius: 0;
 }
@@ -194,7 +237,7 @@ body {
 
 .error-bar {
   padding: 8px 16px;
-  background: #2a0a0a;
+  background: var(--bg);
   color: #c87a7a;
   font-size: 12px;
   border-bottom: 1px solid var(--red);
@@ -204,6 +247,7 @@ body {
 
 .content {
   flex: 1;
+  background: var(--bg);
   overflow-y: auto;
   padding: 16px;
   scrollbar-width: thin;
@@ -256,14 +300,15 @@ body {
   font-size: 24px;
   font-weight: 400;
   color: #e8d5a8;
-  font-family: Georgia, serif;
+  font-family: var(--font-heading);
+  font-style: var(--font-style);
   font-style: italic;
   letter-spacing: 3px;
 }
 .header-badges { display: flex; gap: 8px; }
 .badge-stat {
   padding: 3px 8px;
-  background: #1a1208;
+  background: var(--bg);
   color: var(--text-muted);
   border: 1px solid var(--border);
   font-size: 10px;
@@ -292,7 +337,7 @@ body {
   font-size: 19px;
   font-weight: 400;
   color: #e8d5a8;
-  font-family: Georgia, serif;
+  font-family: var(--font-mono);
 }
 .metric-value.accent { color: var(--orange); }
 .metric-unit {
@@ -422,7 +467,7 @@ body {
   border-radius: 0;
   color: var(--text);
   font-size: 11px;
-  font-family: Georgia, serif;
+  font-family: var(--font-main);
   outline: none;
   cursor: pointer;
 }
@@ -477,9 +522,11 @@ body {
   align-items: center;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: #e8d5a8;
-  font-family: Georgia, serif;
   font-style: italic;
 }
 
@@ -502,6 +549,7 @@ body {
 
 .modal-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; font-style: italic; }
 .modal-desc code {
+  font-family: var(--font-mono);
   background: var(--bg3);
   color: var(--gold);
   padding: 1px 5px;
@@ -518,7 +566,7 @@ body {
   border-radius: 0;
   color: var(--text);
   font-size: 13px;
-  font-family: Georgia, serif;
+  font-family: var(--font-main);
   outline: none;
 }
 .modal-input:focus { border-color: var(--gold); }
@@ -532,8 +580,9 @@ body {
   background: #1a1208;
   color: var(--gold);
   border: 1px solid var(--gold-dim);
-  font-size: 12px;
-  font-family: Georgia, serif;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: background 0.15s;
@@ -544,3 +593,4 @@ body {
 
 .recharts-rectangle.recharts-bar-bg { fill: transparent !important; }
 .recharts-rectangle.recharts-tooltip-cursor { fill: transparent !important; }
+

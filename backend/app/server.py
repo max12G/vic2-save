@@ -92,6 +92,7 @@ def get_stats(tag: str):
         "population_per_reg": logic.population_per_reg(tag),
         "gdp_per_reg": logic.gdp_per_reg(tag),
         "goverement": logic.get_gov_type(tag),
+        "most_popular_party": logic.get_most_popular_patry(tag),
     }
 
 @app.get("/compare")

@@ -15,6 +15,28 @@ countries = []
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
+goverments = {
+    "absolute_monarchy": "Абсолютная монархия",
+    "hms_government": "Конституционная монархия",
+    "prussian_constitutionalism": "Прусский конституцианолизм",
+    "democracy": "Демократия",
+    "presidential_dictatorship": "Президентская диктатура",
+    "proletariat_dictatorship": "Пролетарская диктатура",
+    "bourgeois_dictatorship": "Буржуазная диктатура",
+    "fascist_dictatorship": "Фашистская диктатура",
+              }
+
+parties = {
+    "communist": "Коммунизм",
+    "fascist": "Фашизм",
+    "liberal": "Либерализм",
+    "conservative": "Консерватизм",
+    "reactionary": "Реакционеры",
+    "anarcho_liberal": "Анархо-Либералы",
+    "socialist": "Социализм",
+
+}
+
 def get_needs_goods(data):
     goods = {}
     if data is None:
@@ -920,7 +942,23 @@ def get_gov_type(tag):
     gov = data[tag]["government"]
     if gov is None:
         return "unknown"
-    return gov
+    return goverments[gov]
+
+def get_upper_house(tag):
+    if tag not in data:
+        return "unknown"
+    country = data[tag]
+    upper_house = country["upper_house"]
+    stats = {}
+    for party in upper_house:
+        name = parties[party]
+        stats[name] = upper_house[party]
+    return stats
+
+def get_most_popular_patry(tag):
+    stats = get_upper_house(tag)
+    stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+    return stats[0][0]
 
 def get_money_mass(tag):
     if tag not in data:
@@ -974,7 +1012,8 @@ def parse_victoria2_save(file_path):
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
         
-    data = parse_victoria2_save(r"backend\test_data\Dinney2005_08_29.v2")
+    data = parse_victoria2_save(r"backend\test_data\siiiey1840_01_01.v2")
     world_goods_price = data["worldmarket"]["price_pool"]
+    print(get_most_popular_patry("ENG"))
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))
