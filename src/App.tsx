@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { open } from "@tauri-apps/plugin-dialog"
 import { CountryStats, LoadResult } from "./types"
 import { StatsPanel } from "./components/StatsPanel"
@@ -36,6 +36,7 @@ declare global {
 }
 
 export default function App() {
+  const statsCache = useRef<Map<string, CountryStats>>(new Map())
   const [saveLoaded, setSaveLoaded]   = useState(false)
   const [countries, setCountries]     = useState<string[]>([])
   const [search, setSearch]           = useState("")
@@ -55,7 +56,6 @@ export default function App() {
   const [modLoading, setModLoading]   = useState(false)
   const [theme, setTheme]             = useState<Theme>("victorian")
 
-  // Time view
   const [timePath1, setTimePath1]     = useState("")
   const [timeLoaded, setTimeLoaded]   = useState(false)
   const [timeCountries, setTimeCountries] = useState<string[]>([])
@@ -94,6 +94,7 @@ export default function App() {
   }
 
   async function handleOpenFile() {
+    statsCache.current.clear()  
     let path: string | null = null
     if (window.__TAURI_INTERNALS__) {
       path = await open({
@@ -149,7 +150,6 @@ export default function App() {
     }
     setLoading(false)
   }
-
   async function handleSelectTimeTag(tag: string) {
     setSelectedTimeTag(tag)
     setTimeLoadingStats(true)
@@ -176,12 +176,16 @@ export default function App() {
 
   async function handleSelectCountry(tag: string) {
     if (view === "compare") { toggleCompare(tag); return }
-    if (view === "time")    { handleSelectTimeTag(tag); return }
+    if (view === "time") { handleSelectTimeTag(tag); return }
     setSelectedCountry(tag)
+    if (statsCache.current.has(tag)) {
+      setStats(statsCache.current.get(tag)!)
+      return
+    }
     setStatsLoading(true)
-    setError("")
     try {
       const data = await apiFetch<CountryStats>(`/stats/${tag}`)
+      statsCache.current.set(tag, data) 
       setStats(data)
     } catch (e: any) {
       setError(e.message)
@@ -396,7 +400,7 @@ export default function App() {
             <div className="welcome">
               <div className="welcome-icon">⏳</div>
               <h2>Динамика во времени</h2>
-              <p>Укажи файл прошлого сохранения и просмотри прогресс на кнопку «Загрузить»</p>
+              <p>Укажи два файла сохранения в строке выше и нажми «Загрузить»</p>
             </div>
           )}
           {view === "time" && timeLoaded && (

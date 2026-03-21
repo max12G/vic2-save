@@ -161,7 +161,7 @@ export function TimeView({ timeData, selectedTag, loading }: Props) {
           return (
             <div key={label} style={{ background: PANEL, border: `1px solid ${BORDER}`, borderLeft: `2px solid ${color}`, padding: "12px 14px" }}>
               <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 1.5, marginBottom: 5, textTransform: "uppercase" as const }}>{label}</div>
-              <div style={{ color: "#e8d5a8", fontSize: 18, fontFamily: "Georgia, serif" }}>{f(v2)}</div>
+              <div style={{ color: "#e8d5a8", fontSize: 18, fontFamily: FONT_FAMILY }}>{f(v2)}</div>
               <div style={{ color: isPos ? GREEN : RED, fontSize: 10, marginTop: 3 }}>
                 {diff > 0 ? "↑" : "↓"} {Math.abs(pct).toFixed(1)}% от {f(v1)}
               </div>

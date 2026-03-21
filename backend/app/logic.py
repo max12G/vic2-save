@@ -37,6 +37,16 @@ parties = {
 
 }
 
+war_id = 0
+
+def text_fix(text):
+    if not isinstance(text, str):
+        return text
+    try:
+        return text.encode('latin-13').decode('cp1251')
+    except :
+        return text
+
 def get_needs_goods(data):
     goods = {}
     if data is None:
@@ -991,28 +1001,118 @@ def get_pop_spendings(tag, data=None):
 def country_exists(tag, data=None):
     return get_country_size(tag, data) != 0
 
+def calculate_active_wars(data=None):
+    global war_id
+    all_wars = {}
+    for war in data.find_all("active_war"):
+        war_dict = {}
+        attackers = []
+        defenders = []
+        attack_loses = {}
+        defend_loses = {}
+        war_dict["name"] = war_id
+        history = war["history"]
+        for event in history.values():
+            if isinstance(event, str):
+                continue
+            if "add_attacker" in event.keys():
+                attackers.append(event["add_attacker"])
+            if "add_defender" in event.keys():
+                defenders.append(event["add_defender"])
+            if "battle" in event.keys():
+                for battle in event.find_all("battle"):
+                    attacker = battle["attacker"]
+                    attack_loses[attacker["country"]] = attack_loses.get(attacker["country"], 0) + attacker["losses"] * 4
+                    defender = battle["defender"]
+                    defend_loses[defender["country"]] = defend_loses.get(defender["country"], 0) + defender["losses"] * 4
+        for battle in history.find_all("battle"):
+            attacker = battle["attacker"]
+            attack_loses[attacker["country"]] = attack_loses.get(attacker["country"], 0) + attacker["losses"] * 4
+            defender = battle["defender"]
+            defend_loses[defender["country"]] = defend_loses.get(defender["country"], 0) + defender["losses"] * 4
+        war_dict["attackers"] = attackers
+        war_dict["defenders"] = defenders
+        war_dict["casualites_atk"] = attack_loses
+        war_dict["casualites_def"] = defend_loses
+        war_dict["total_losses"] = calculate_all_casualites(war_dict)
+        if defend_loses != {} and attack_loses != {}:
+            all_wars[war_id] = war_dict
+            war_id += 1
+
+    return all_wars
+
+def calculate_previous_wars(data=None):
+    global war_id
+    all_wars = {}
+    for war in data.find_all("previous_war"):
+        war_dict = {}
+        attackers = []
+        defenders = []
+        attack_loses = {}
+        defend_loses = {}
+        war_dict["name"] = war_id
+        history = war["history"]
+        for event in history.values():
+            if isinstance(event, str):
+                continue
+            if "add_attacker" in event.keys():
+                attackers.append(event["add_attacker"])
+            if "add_defender" in event.keys():
+                defenders.append(event["add_defender"])
+            if "battle" in event.keys():
+                for battle in event.find_all("battle"):
+                    attacker = battle["attacker"]
+                    attack_loses[attacker["country"]] = attack_loses.get(attacker["country"], 0) + attacker["losses"] * 4
+                    defender = battle["defender"]
+                    defend_loses[defender["country"]] = defend_loses.get(defender["country"], 0) + defender["losses"] * 4
+        for battle in history.find_all("battle"):
+            attacker = battle["attacker"]
+            attack_loses[attacker["country"]] = attack_loses.get(attacker["country"], 0) + attacker["losses"] * 4
+            defender = battle["defender"]
+            defend_loses[defender["country"]] = defend_loses.get(defender["country"], 0) + defender["losses"] * 4
+        war_dict["attackers"] = attackers
+        war_dict["defenders"] = defenders
+        war_dict["casualites_atk"] = attack_loses
+        war_dict["casualites_def"] = defend_loses
+        war_dict["total_losses"] = calculate_all_casualites(war_dict)
+        if defend_loses != {} and attack_loses != {}:
+            all_wars[war_id] = war_dict
+            war_id += 1
+
+    return all_wars
+
+def find_all_prev_wars_tag(tag, data):
+    wars = calculate_previous_wars(data)
+    all_wars = {}
+    for id, war in wars.items():
+        all_tags = war["attackers"] + war["defenders"]
+        if tag in all_tags:
+            all_wars[id] = war
+    return all_wars
+
+def calculate_all_casualites(war):
+    return sum(war["casualites_atk"].values()) + sum(war["casualites_def"].values())
+
+
 
 
 def parse_victoria2_save(file_path):
-        try:
-            with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
-                content = f.read()
-            
-            content = re.sub(r'(bank=-?\d+\.\d+)\d{2}\.\d+', r'\1', content)
-            
-            data = pyradox_txt.parse(content)
-            return data
-            
-        except Exception as e:
-            print(f"Ошибка при парсинге: {e}")
-            return None
+    try:
+        with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
+            content = f.read()
+        data = pyradox_txt.parse(content)
+        return data
+        
+    except Exception as e:
+        print(f"Ошибка при парсинге: {e}")
+        return None
 
 
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
         
-    data = parse_victoria2_save(r"backend\test_data\siiiey1840_01_01.v2")
+    data = parse_victoria2_save(r"backend\test_data\siiiey1918_01_11.v2")
     world_goods_price = data["worldmarket"]["price_pool"]
-    print(get_most_popular_patry("ENG", data))
+    print(sorted(find_all_prev_wars_tag("ENG", data).items(), key = lambda x: calculate_all_casualites(x[1])))
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))
