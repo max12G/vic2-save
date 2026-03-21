@@ -6,13 +6,24 @@ import {
 
 interface Props { data: Record<string, CountryStats> }
 
-const COLORS = ["#4f8ef7", "#4ff79f", "#f7954f", "#f74f4f", "#c44ff7"]
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M"
   if (n >= 1_000) return (n / 1_000).toFixed(1) + "K"
   return n.toFixed(0)
 }
+
+const GOLD   = "var(--gold)"
+const GREEN  = "var(--green)"
+const RED    = "var(--red)"
+const BLUE   = "var(--blue)"
+const ORANGE = "var(--orange)"
+const TEXT   = "var(--text)"
+const TEXTDIM = "var(--text-dim)"
+const BG     = "var(--bg)"
+const FONT_FAMILY = "var(--font-main)"
+
+const COLORS = [BLUE, GREEN, ORANGE, RED, GOLD]
 
 export function CompareView({ data }: Props) {
   const tags = Object.keys(data)
@@ -96,15 +107,14 @@ export function CompareView({ data }: Props) {
   ]
 
   const tooltipStyle = {
-    background: "#1a1d27", border: "1px solid #2a2d3a",
-    borderRadius: 6, color: "#ccc"
+    background: BG, border: "1px solid BG",
+    borderRadius: 6, color: TEXT,
   }
 
   return (
     <div className="compare-view">
       <h2 className="compare-title">{tags.join(" · ")}</h2>
 
-      {/* Топ рейтинги */}
       <div className="charts-grid">
         {rankings.map(({ title, sorted, getNum, getValue }) => {
           const maxVal = getNum(sorted[0]) || 1
@@ -118,12 +128,12 @@ export function CompareView({ data }: Props) {
                   <div key={tag} style={{ marginBottom: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ color: "#555", fontSize: 11, width: 16 }}>#{i + 1}</span>
-                        <span style={{ color: COLORS[tags.indexOf(tag)], fontSize: 13, fontFamily: "monospace", fontWeight: 700 }}>{tag}</span>
+                        <span style={{ color: TEXT, fontSize: 11, width: 16 }}>#{i + 1}</span>
+                        <span style={{ color: COLORS[tags.indexOf(tag)], fontSize: 12, fontFamily: FONT_FAMILY, fontWeight: 700 }}>{tag}</span>
                       </div>
-                      <span style={{ color: "#ccc", fontSize: 12 }}>{getValue(tag)}</span>
+                      <span style={{ color: TEXT, fontSize: 12 }}>{getValue(tag)}</span>
                     </div>
-                    <div style={{ height: 5, background: "#1a1d27", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: 5, background: BG, borderRadius: 3, overflow: "hidden" }}>
                       <div style={{ width: `${pct}%`, height: "100%", background: COLORS[tags.indexOf(tag)], borderRadius: 3 }} />
                     </div>
                   </div>
@@ -141,13 +151,13 @@ export function CompareView({ data }: Props) {
           <ResponsiveContainer width="100%" height={280}>
             <RadarChart data={radarData}>
               <PolarGrid stroke="#2a2d3a" />
-              <PolarAngleAxis dataKey="metric" tick={{ fill: "#666", fontSize: 11 }} />
+              <PolarAngleAxis dataKey="metric" tick={{ fill: TEXTDIM, fontSize: 11 }} />
               {tags.map((tag, i) => (
                 <Radar key={tag} name={tag} dataKey={tag}
                   stroke={COLORS[i]} fill={COLORS[i]} fillOpacity={0.15}
                 />
               ))}
-              <Legend wrapperStyle={{ color: "#888", fontSize: 12 }} />
+              <Legend wrapperStyle={{ color: TEXT, fontSize: 12 }} />
             </RadarChart>
           </ResponsiveContainer>
         </div>
@@ -157,10 +167,10 @@ export function CompareView({ data }: Props) {
           <div className="chart-title">ВВП (£)</div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={econData}>
-              <XAxis dataKey="metric" tick={{ fill: "#666", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={fmt} tick={{ fill: "#555", fontSize: 11 }} axisLine={false} tickLine={false} width={45} />
+              <XAxis dataKey="metric" tick={{ fill: TEXT, fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={fmt} tick={{ fill: TEXTDIM, fontSize: 11 }} axisLine={false} tickLine={false} width={45} />
               <Tooltip formatter={(v: any) => fmt(v) + " £"} contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ color: "#888", fontSize: 12 }} />
+              <Legend wrapperStyle={{ color: TEXT, fontSize: 12 }} />
               {tags.map((tag, i) => (
                 <Bar key={tag} dataKey={tag} fill={COLORS[i]} radius={[3, 3, 0, 0]} />
               ))}

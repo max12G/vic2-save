@@ -61,11 +61,10 @@ def get_weights():
     return weigshts
 
 weights = get_weights()
-data = {}
 world_goods_price = {}
 
 
-def get_subside_cost(tag):
+def get_subside_cost(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -81,7 +80,7 @@ def get_subside_cost(tag):
 
     return round(subside / 1000, 3)
 
-def get_subside_ind(tag):
+def get_subside_ind(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -100,7 +99,7 @@ def get_subside_ind(tag):
         return 0 
     return round(subside_c / all_fab * 100, 2)
 
-def get_avg_income_per_fab(tag):
+def get_avg_income_per_fab(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -118,7 +117,7 @@ def get_avg_income_per_fab(tag):
         return 0
     return round(all_income / fab / 1000, 3)
 
-def get_gold_mining(tag):
+def get_gold_mining(tag, data=None):
     
     if tag not in data:
         return 0
@@ -136,7 +135,7 @@ def get_gold_mining(tag):
                     gold += last_income / 1000
     return int(gold)
 
-def get_gdp_per_reg(tag):
+def get_gdp_per_reg(tag, data=None):
     
     if tag not in data:
         return 0
@@ -166,7 +165,7 @@ def get_gdp_per_reg(tag):
     gdp_per_reg = dict(sorted(gdp_per_reg.items(), key=lambda x: x[1], reverse=True))
     return gdp_per_reg
 
-def get_concentrate_economy(tag):
+def get_concentrate_economy(tag, data=None):
     if tag not in data:
         return 0
     states = list(data[tag].find_all("state"))
@@ -178,7 +177,7 @@ def get_concentrate_economy(tag):
         return 0
     return min(round(sum(vals[:top + 1]) / gdp, 3), 1)
 
-def get_employed_fabric(tag):
+def get_employed_fabric(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -190,7 +189,7 @@ def get_employed_fabric(tag):
 
     return pop
 
-def get_rgo_employed(tag):
+def get_rgo_employed(tag, data=None):
     
     if tag not in data:
         return 0
@@ -205,7 +204,7 @@ def get_rgo_employed(tag):
                     pop += employee["count"]
     return pop
 
-def getSupply(tag):
+def getSupply(tag, data=None):
     
     if tag not in data:
         return 0
@@ -227,9 +226,9 @@ def getSupply(tag):
 
 
 
-    return int(Supply + goverement_gdp(tag))
+    return int(Supply + goverement_gdp(tag, data))
 
-def industirialGDP(tag):
+def industirialGDP(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -243,7 +242,7 @@ def industirialGDP(tag):
 
     return int(GDP)
 
-def GDP_selo(tag):
+def GDP_selo(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -265,30 +264,30 @@ def GDP_selo(tag):
                     GDP += max(0, income - cost) / 1000
     return int(GDP)
         
-def goverement_gdp(tag):
+def goverement_gdp(tag, data=None):
     if tag not in data:
         return 0
     mil = data[tag]["military_spending"]["maxValue"] / 1000
     edu = data[tag]["education_spending"]["maxValue"] / 1000
     soc = data[tag]["social_spending"]["maxValue"] / 1000
     adm = data[tag]["crime_fighting"]["maxValue"] / 1000
-    army = get_army_budget(tag)
-    nav = get_naval_budget(tag)
+    army = get_army_budget(tag, data)
+    nav = get_naval_budget(tag, data)
     return mil + edu + soc + adm + army + nav
 
-def getGDP(tag):
-    return int(industirialGDP(tag) + GDP_selo(tag))
+def getGDP(tag, data=None):
+    return int(industirialGDP(tag, data) + GDP_selo(tag, data))
 
-def indPower(tag):
+def indPower(tag, data=None):
     
     if tag not in data:
         return 0
-    gdp = getGDP(tag)
+    gdp = getGDP(tag, data)
     if gdp == 0:
         return 0
-    return round(industirialGDP(tag) / gdp, 2)
+    return round(industirialGDP(tag, data) / gdp, 2)
 
-def get_population(tag):
+def get_population(tag, data=None):
     
     if tag not in data:
         return 0
@@ -312,7 +311,7 @@ def get_population(tag):
                     all_population += pop["size"]
     return all_population * 4
 
-def get_literacy(tag):
+def get_literacy(tag, data=None):
     
     if tag not in data:
         return 0
@@ -336,9 +335,9 @@ def get_literacy(tag):
                     lit += pop["literacy"] * pop["size"]
     if lit == 0:
         return 0
-    return round(lit / get_population(tag) * 400, 2)
+    return round(lit / get_population(tag, data) * 400, 2)
 
-def get_literacy_metropolian(tag):
+def get_literacy_metropolian(tag, data=None):
     if tag not in data:
         return 0
     
@@ -360,16 +359,16 @@ def get_literacy_metropolian(tag):
                     lit += pop["literacy"] * pop["size"]
     if lit == 0:
         return 0
-    return round(lit / get_population(tag) * 400, 2)
+    return round(lit / get_population(tag, data) * 400, 2)
     
-def get_GDP_per_capita(tag):
-    gdp = getGDP(tag)
-    population = get_population(tag)
+def get_GDP_per_capita(tag, data=None):
+    gdp = getGDP(tag, data)
+    population = get_population(tag, data)
     if population == 0:
         return 0
     return round(gdp / population * 100000, 3)
 
-def get_fab_efficiency(tag):
+def get_fab_efficiency(tag, data=None):
     if tag not in data:
         return 0
     all_naval_techs = [
@@ -392,7 +391,7 @@ def get_fab_efficiency(tag):
             count += 1
     return count
 
-def get_Consumption_economy(tag):
+def get_Consumption_economy(tag, data=None):
     
     if tag not in data:
         return 0
@@ -413,7 +412,7 @@ def get_Consumption_economy(tag):
 
     return int(Consumption)
 
-def get_all_pop_money(tag):
+def get_all_pop_money(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -436,15 +435,15 @@ def get_all_pop_money(tag):
         
     return int(all_money)
 
-def get_money_activity(tag):
+def get_money_activity(tag, data=None):
     
-    gdp = getGDP(tag)
-    all_money = get_money_mass(tag)
+    gdp = getGDP(tag, data)
+    all_money = get_money_mass(tag, data)
     if all_money == 0:
         return 0
     return round(gdp / all_money * 100, 3)
 
-def getAvgRich(tag):
+def getAvgRich(tag, data=None):
     pop_types = ['aristocrats', 'capitalists']
     States = data[tag].find_all("state")
     all_population = 0
@@ -480,7 +479,7 @@ def getlifecost():
     luxury_cost /= 1000
     return round(base_cost, 6), round(mid_cost, 6), round(luxury_cost, 6)
 
-def getpopsize(pop, tag):
+def getpopsize(pop, tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -495,13 +494,13 @@ def getpopsize(pop, tag):
 
     return total_population
 
-def avgpopspending(pop, tag):
+def avgpopspending(pop, tag, data=None):
     if tag not in data:
         return 0
     base_cost, mid_cost, luxury_cost = getlifecost()
     states = data[tag].find_all("state")
     total_spending = 0
-    total_population = getpopsize(pop, tag)
+    total_population = getpopsize(pop, tag, data)
     if total_population == 0:
         return 0
     for state in states:
@@ -526,18 +525,18 @@ def avgpopspending(pop, tag):
 
     return round(total_spending / total_population * 1000, 2)
 
-def fabric_uneployement(tag):
-    all_empl = getpopsize("craftsmen", tag) + getpopsize("clerks", tag)
+def fabric_uneployement(tag, data=None):
+    all_empl = getpopsize("craftsmen", tag, data) + getpopsize("clerks", tag, data)
     if all_empl == 0:
         return 0
-    return round((all_empl - get_employed_fabric(tag)) /\
+    return round((all_empl - get_employed_fabric(tag, data)) /\
                   all_empl * 100, 2)
 
-def rgo_uneployement(tag):
-    return max(0, round((getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag) - get_rgo_employed(tag)) /\
-                 (getpopsize("farmers", tag) + getpopsize("labourers", tag) + getpopsize("slaves", tag) * 100 + 1), 2))
+def rgo_uneployement(tag, data=None):
+    return max(0, round((getpopsize("farmers", tag, data) + getpopsize("labourers", tag, data) + getpopsize("slaves", tag, data) - get_rgo_employed(tag, data)) /\
+                 (getpopsize("farmers", tag, data) + getpopsize("labourers", tag, data) + getpopsize("slaves", tag, data) * 100 + 1), 2))
 
-def get_fabric_salary_spendings(tag):
+def get_fabric_salary_spendings(tag, data=None):
     
     if tag not in data:
         return 0
@@ -550,15 +549,15 @@ def get_fabric_salary_spendings(tag):
 
     return salary
 
-def get_all_employed(tag):
-    return get_employed_fabric(tag) + get_rgo_employed(tag)
+def get_all_employed(tag, data=None):
+    return get_employed_fabric(tag, data) + get_rgo_employed(tag, data)
 
-def get_avg_salary(tag):
-    fabric_employee = get_employed_fabric(tag)
+def get_avg_salary(tag, data=None):
+    fabric_employee = get_employed_fabric(tag, data)
     if fabric_employee == 0: return 0
-    return round(get_fabric_salary_spendings(tag) / fabric_employee / 2, 3)
+    return round(get_fabric_salary_spendings(tag, data) / fabric_employee / 2, 3)
 
-def get_avg_capilatils_salary(tag):
+def get_avg_capilatils_salary(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -568,9 +567,9 @@ def get_avg_capilatils_salary(tag):
             sal = building["pops_paychecks"]
             salary += sal * 10 + (building["last_income"] - building["last_spending"]) / 100
 
-    return round(salary / getpopsize("capitalists", tag) if getpopsize("capitalists", tag) > 0 else 0, 1)
+    return round(salary / getpopsize("capitalists", tag, data) if getpopsize("capitalists", tag, data) > 0 else 0, 1)
     
-def get_economy_producing_podrobno(tag):
+def get_economy_producing_podrobno(tag, data=None):
     if tag not in data:
         return (0, 0)
     states = data[tag].find_all("state")
@@ -613,7 +612,7 @@ def get_economy_producing_podrobno(tag):
         return (0, 0)
     return good_produce, goods_pricing
 
-def get_economy_demand_podrobno(tag):
+def get_economy_demand_podrobno(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -663,11 +662,11 @@ def get_economy_demand_podrobno(tag):
 
     return good_demand, goods_pricing
 
-def get_export(tag):
+def get_export(tag, data=None):
     if tag not in data:
         return 0
-    demand = get_economy_demand_podrobno(tag)[1]
-    prod = get_economy_producing_podrobno(tag)[1]
+    demand = get_economy_demand_podrobno(tag, data)[1]
+    prod = get_economy_producing_podrobno(tag, data)[1]
     export = 0
     for good in world_goods_price:
         dem = demand.get(good, 0)
@@ -679,8 +678,8 @@ def get_export(tag):
 def get_import(tag):
     if tag not in data:
         return 0
-    demand = get_economy_demand_podrobno(tag)[1]
-    prod = get_economy_producing_podrobno(tag)[1]
+    demand = get_economy_demand_podrobno(tag, data)[1]
+    prod = get_economy_producing_podrobno(tag, data)[1]
     import_t = 0
     for good in world_goods_price:
         dem = demand.get(good, 0)
@@ -689,10 +688,10 @@ def get_import(tag):
 
     return int(import_t)
 
-def get_trade_balance(tag):
-    return get_export(tag) - get_import(tag)
+def get_trade_balance(tag, data=None):
+    return get_export(tag, data) - get_import(tag, data)
 
-def get_army_budget(tag):
+def get_army_budget(tag, data=None):
     if tag not in data:
         return 0
     supply = data[tag]["land_supply_cost"]
@@ -703,7 +702,7 @@ def get_army_budget(tag):
         cost += supply[good] * world_goods_price[good]
     return int(cost)
 
-def get_naval_budget(tag):
+def get_naval_budget(tag, data=None):
     if tag not in data:
         return 0
     supply = data[tag]["naval_supply_cost"]
@@ -714,8 +713,8 @@ def get_naval_budget(tag):
         cost += supply[good] * world_goods_price[good]
     return int(cost)
 
-def get_diversification_ind(tag):
-    res = get_economy_producing_podrobno(tag)[1]
+def get_diversification_ind(tag, data=None):
+    res = get_economy_producing_podrobno(tag, data)[1]
     if res=={} or res == 0:
         return 0
     top3 = sorted(res.items(), key=lambda x: x[1], reverse=True)[:3]
@@ -724,7 +723,7 @@ def get_diversification_ind(tag):
         total += amount
     if total == 0:
         return 0
-    return round(getSupply(tag) / total, 3)
+    return round(getSupply(tag, data) / total, 3)
 
 def sum_vals(d):
     total = 0
@@ -732,13 +731,13 @@ def sum_vals(d):
         total += d[key]
     return total
 
-def get_country_savings(tag):
+def get_country_savings(tag, data=None):
     if tag not in data:
         return 0
     money = data[tag]["money"]
     return round(money, 3)
 
-def get_tax(tag):
+def get_tax(tag, data=None):
     if tag not in data:
         return 0
     country = data[tag]
@@ -748,12 +747,12 @@ def get_tax(tag):
         taxes[tax_type] = s
     return taxes
 
-def average_spendings(tag):
+def average_spendings(tag, data=None):
     if tag not in data:
         return 0
     spendings = {"rich" : 0, "middle": 0, "poor": 0}
     rich_pops = ["aristocrats", "capitalists", "officers"]
-    taxes = get_tax(tag)
+    taxes = get_tax(tag, data)
     rich_population = 0
     for pop in rich_pops:
         rich_population += getpopsize(pop, tag)
@@ -770,22 +769,22 @@ def average_spendings(tag):
     spendings["poor"] = taxes["poor_tax"] / poor_population if poor_population > 0 else 0
     return spendings
 
-def jinny_ind(tag):
+def jinny_ind(tag, data=None):
     if tag not in data:
         return 0
-    spends = average_spendings(tag)
+    spends = average_spendings(tag, data)
     rich_avg = spends["rich"] 
-    taxes = get_tax(tag)
+    taxes = get_tax(tag, data)
     all_taxes = sum_vals(taxes)
-    all_avg = all_taxes / get_population(tag) if get_population(tag) > 0 else 0
+    all_avg = all_taxes / get_population(tag, data) if get_population(tag, data) > 0 else 0
     if all_taxes == 0:
         return 0
     return round(rich_avg / all_avg, 3)
     
-def amortization(tag):
+def amortization(tag, data=None):
     pass
 
-def avg_rentability(tag):
+def avg_rentability(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
@@ -808,21 +807,21 @@ def avg_rentability(tag):
         return 0
     return round(total_profit / total_cost * 100, 1)
 
-def get_gdp_added_value(tag):
+def get_gdp_added_value(tag, data=None):
     pass
 
-def get_all_work_places(tag):
+def get_all_work_places(tag, data=None):
     if tag not in data:
         return 0
     states = data[tag].find_all("state")
-    all_work_pops = get_employed_fabric(tag)
+    all_work_pops = get_employed_fabric(tag, data)
     new_places = 0
     for state in states:
         for building in state.find_all("state_buildings"):
             new_places += (building["level"] + 1) * 10000
     return new_places - all_work_pops
 
-def army_innovation(tag):
+def army_innovation(tag, data=None):
     if tag not in data:
         return 0
     tech_list = [
@@ -843,7 +842,7 @@ def army_innovation(tag):
             count += 1
     return count
 
-def naval_innovation(tag):
+def naval_innovation(tag, data=None):
     if tag not in data:
         return 0
     all_naval_techs = [
@@ -866,12 +865,12 @@ def naval_innovation(tag):
             count += 1
     return count
 
-def real_gini(tag):
+def real_gini(tag, data=None):
     if tag not in data:
         return 0
     
-    all_money = get_all_pop_money(tag)
-    all_pop = get_population(tag)
+    all_money = get_all_pop_money(tag, data)
+    all_pop = get_population(tag, data)
     
     pop_types = [
         'farmers', 'labourers', 'artisans', 'clergymen', 
@@ -904,7 +903,7 @@ def real_gini(tag):
     
     return round(1 - 2 * area, 3)
 
-def get_military_spendings(tag):
+def get_military_spendings(tag, data=None):
     if tag not in data:
         return 0
     spendings = data[tag]["military_spending"]["maxValue"]
@@ -920,23 +919,23 @@ def get_military_spendings(tag):
     if population == 0: return 0
     return round(spendings / population, 3)
 
-def get_country_size(tag):
+def get_country_size(tag, data=None):
     if tag not in data:
         return 0
     states = list(data[tag].find_all("state"))
     return len(states)
 
-def gdp_per_reg(tag):
+def gdp_per_reg(tag, data=None):
     if tag not in data:
         return 0
-    return round(getGDP(tag) / get_country_size(tag), 3)
+    return round(getGDP(tag, data) / get_country_size(tag, data), 3)
 
-def population_per_reg(tag):
+def population_per_reg(tag, data=None):
     if tag not in data:
         return 0
-    return int(get_population(tag) / get_country_size(tag))
+    return int(get_population(tag, data) / get_country_size(tag, data))
 
-def get_gov_type(tag):
+def get_gov_type(tag, data=None):
     if tag not in data:
         return "unknown"
     gov = data[tag]["government"]
@@ -944,7 +943,7 @@ def get_gov_type(tag):
         return "unknown"
     return goverments[gov]
 
-def get_upper_house(tag):
+def get_upper_house(tag, data=None):
     if tag not in data:
         return "unknown"
     country = data[tag]
@@ -955,42 +954,42 @@ def get_upper_house(tag):
         stats[name] = upper_house[party]
     return stats
 
-def get_most_popular_patry(tag):
-    stats = get_upper_house(tag)
+def get_most_popular_patry(tag, data=None):
+    stats = get_upper_house(tag, data)
     stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
     return stats[0][0]
 
-def get_money_mass(tag):
+def get_money_mass(tag, data=None):
     if tag not in data:
         return 0
-    gov_money = get_country_savings(tag)
-    pop_money = get_all_pop_money(tag)
-    bank = get_bank_savings(tag)
+    gov_money = get_country_savings(tag, data)
+    pop_money = get_all_pop_money(tag, data)
+    bank = get_bank_savings(tag, data)
     return round(gov_money + pop_money + bank, 3)
 
-def get_avg_pop_savings(tag):
+def get_avg_pop_savings(tag, data=None):
     if tag not in data:
         return 0
-    all_pop_money = get_all_pop_money(tag)
-    population = get_population(tag)
+    all_pop_money = get_all_pop_money(tag, data)
+    population = get_population(tag, data)
     if population == 0:
         return 0
     return round(all_pop_money / population * 1000, 3)
 
-def get_bank_savings(tag):
+def get_bank_savings(tag, data=None):
     if tag not in data:
         return 0
     bank = data[tag]["bank"]
     return round(bank["money"] + bank["money_lent"], 2)
 
-def get_all_mil_budget(tag):
-    return get_army_budget(tag) + get_naval_budget(tag)
+def get_all_mil_budget(tag, data=None):
+    return get_army_budget(tag, data=None) + get_naval_budget(tag, data=None)
 
-def get_pop_spendings(tag):
+def get_pop_spendings(tag, data=None):
     pass
 
-def country_exists(tag):
-    return get_country_size(tag) != 0
+def country_exists(tag, data=None):
+    return get_country_size(tag, data) != 0
 
 
 
@@ -1014,6 +1013,6 @@ if __name__ == "__main__":
         
     data = parse_victoria2_save(r"backend\test_data\siiiey1840_01_01.v2")
     world_goods_price = data["worldmarket"]["price_pool"]
-    print(get_most_popular_patry("ENG"))
+    print(get_most_popular_patry("ENG", data))
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

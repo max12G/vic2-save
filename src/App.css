@@ -7,8 +7,8 @@
   --bg3:        #070503;
   --border:     #3a2e1e;
   --border2:    #2a1e10;
-  --text:       #c8b89a;
-  --text-dim:   #5a4a30;
+  --text:       #ddc69b;
+  --text-dim:   #8f7346;
   --text-muted: #8a7a60;
   --accent:     #c9a84c;
   --green:      #7a9a4a;
@@ -33,8 +33,8 @@
   --bg3:        #12141a;
   --border:     #2a2d3a;
   --border2:    #1e2030;
-  --text:       #d0d0d0;
-  --text-dim:   #666;
+  --text:       #e0e0e0;
+  --text-dim:   #999999;
   --text-muted: #888;
   --accent:     #4f8ef7;
   --green:      #4ff79f;
@@ -419,7 +419,7 @@ body {
 .compare-table th:first-child,
 .compare-table td:first-child { text-align: left; color: var(--text-muted); }
 .compare-table th { color: var(--text-dim); font-weight: 500; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
-.compare-table tr:hover td { background: #1a1208; }
+.compare-table tr:hover td { background: var(--bg2); }
 
 /* ── Grid helpers ── */
 .s-grid-3 {

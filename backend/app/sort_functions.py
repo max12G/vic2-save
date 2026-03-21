@@ -11,9 +11,9 @@ SORT_FUNCS = {
     "natural_gdp": logic.GDP_selo,
 }
 
-def safe_sort(tag: str, sort_met: str) -> float:
+def safe_sort(tag: str, sort_met: str, data) -> float:
     func = SORT_FUNCS.get(sort_met, logic.getGDP)
     try:
-        return func(tag)
+        return func(tag, data)
     except :
         return 0

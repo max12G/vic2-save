@@ -20,6 +20,7 @@ const BORDER2 = "var(--border2)"
 const TEXT   = "var(--text)"
 const TEXTDIM = "var(--text-dim)"
 const BG     = "var(--bg)"
+const FONT_FAMILY = "var(--font-main)"
 
 
 
@@ -38,7 +39,7 @@ function fix(n: any, d = 1): string {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div style={{ background: "#0a0705", border: `1px solid ${GOLD}55`, padding: "10px 14px", fontSize: 12, fontFamily: "Georgia" }}>
+    <div style={{ background: "#0a0705", border: `1px solid ${GOLD}55`, padding: "10px 14px", fontSize: 12, fontFamily: FONT_FAMILY }}>
       <div style={{ color: GOLD, marginBottom: 4, fontStyle: "italic" }}>{label}</div>
       {payload.map((p: any, i: number) => (
         <div key={i} style={{ color: TEXT }}>{p.name}: <b style={{ color: "#e8d5a8" }}>{fmt(p.value)}</b></div>
@@ -77,7 +78,7 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string; s
   return (
     <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderLeft: `2px solid ${c}`, padding: "12px 14px" }}>
       <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 1.5, marginBottom: 5, textTransform: "uppercase" as const }}>{label}</div>
-      <div style={{ color: "#e8d5a8", fontSize: 20, fontFamily: "Georgia, serif" }}>{value}</div>
+      <div style={{ color: "#e8d5a8", fontSize: 20, fontFamily: FONT_FAMILY }}>{value}</div>
       {sub && <div style={{ color: c, fontSize: 10, marginTop: 3 }}>{sub}</div>}
     </div>
   )
@@ -142,7 +143,7 @@ export function StatsPanel({ stats }: Props) {
   const cardStyle = { background: PANEL, border: `1px solid ${BORDER}`, padding: "16px 18px" }
 
   return (
-    <div style={{ background: BG, minHeight: "100%", color: TEXT, fontFamily: "Georgia, serif" }}>
+    <div style={{ background: BG, minHeight: "100%", color: TEXT, fontFamily: FONT_FAMILY }}>
 
       {/* HEADER */}
       <div style={{ background: headerBg, borderBottom: `1px solid ${BORDER}`, padding: 0 }}>
@@ -157,7 +158,7 @@ export function StatsPanel({ stats }: Props) {
                   style={{ height: 28, border: `1px solid ${BORDER}` }}
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
                 />
-                <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 22, color: "#e8d5a8", letterSpacing: 4, fontStyle: "italic", fontWeight: 400 }}>{stats.tag}</h2>
+                <h2 style={{ margin: 0, fontFamily: FONT_FAMILY, fontSize: 22, color: "#e8d5a8", letterSpacing: 4, fontStyle: "italic", fontWeight: 400 }}>{stats.tag}</h2>
                 <span style={{ background: BG, color: GOLD, fontSize: 10, padding: "2px 8px", border: `1px solid ${GOLD}44`, letterSpacing: 1 }}>{stats.goverement + " -- " + stats.most_popular_party || "undefined"}</span>
               </div>
               <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 2 }}>VICTORIA II · {stats.country_size} РЕГИОНОВ</div>
@@ -172,7 +173,7 @@ export function StatsPanel({ stats }: Props) {
               { label: "Джини",       value: fix(stats.gini, 3),        color: gini > 0.6 ? RED : ORANGE },
             ].map(k => (
               <div key={k.label}>
-                <div style={{ color: k.color, fontSize: 17, fontFamily: "Georgia, serif" }}>{k.value}</div>
+                <div style={{ color: k.color, fontSize: 17, fontFamily: FONT_FAMILY }}>{k.value}</div>
                 <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 2, marginTop: 2 }}>{k.label}</div>
               </div>
             ))}
@@ -393,12 +394,12 @@ export function StatsPanel({ stats }: Props) {
               <KpiCard label="Морской бюджет"  value={fmt(stats.naval_budget) + " £"}   color={BLUE} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
               <div style={cardStyle}>
                 <SectionTitle>Технологический уровень</SectionTitle>
                 <ProgressRow label="Армейские технологии" value={Number(stats.army_innov)}  max={40} color={ORANGE} valLabel={`${stats.army_innov} / 40`} />
                 <ProgressRow label="Морские технологии"   value={Number(stats.naval_innov)} max={40} color={BLUE}   valLabel={`${stats.naval_innov} / 40`} />
-                <div style={{ marginTop: 14 }}>
+                <div style={{ marginTop: 20 }}>
                   <StatRow label="Наземный бюджет" value={fmt(stats.military_budget) + " £"} color={ORANGE} />
                   <StatRow label="Морской бюджет"  value={fmt(stats.naval_budget) + " £"}    color={BLUE} />
                   <StatRow label="Золотодобыча"    value={fmt(stats.gold_income) + " £"}     color={GOLD} />
@@ -410,7 +411,7 @@ export function StatsPanel({ stats }: Props) {
                 <ResponsiveContainer width="100%" height={210}>
                   <RadarChart data={radarData}>
                     <PolarGrid stroke={BORDER2} />
-                    <PolarAngleAxis dataKey="metric" tick={{ fill: TEXTDIM, fontSize: 10 }} />
+                    <PolarAngleAxis dataKey="metric" tick={{ fill: TEXTDIM, fontSize: 12  }} />
                     <Radar dataKey="value" stroke={GOLD} fill={GOLD} fillOpacity={0.15} strokeWidth={1.5} />
                   </RadarChart>
                 </ResponsiveContainer>
