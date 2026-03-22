@@ -28,7 +28,7 @@ def parse_victoria2_save(file_path):
         print(f"Ошибка при парсинге: {e}")
         return None
 
-@app.post("/load")
+@app.post("/load", tags=["Загрузка файла"], summary="Загрузить файл", description="Ничего не возвращает, обновляет кэш")
 def load_save(body: LoadRequest):
     path = body.path
     data = parse_victoria2_save(path[-1])
@@ -45,66 +45,82 @@ def load_save(body: LoadRequest):
                  and logic.country_exists(tag=k, data=data)]
     return f"loaded {len(logic.countries)} countries"
 
-@app.get("/countries")
+@app.get("/countries", tags=["Загрузка файла"], summary="Отсортировать страны", description="Возвращает список стран отсортированный")
 def get_countries(sort_met: str = "gdp", ascendic: bool = False):
     logic.countries.sort(key=lambda x: safe_sort(sort_met=sort_met, tag=x, data=cache[-1]), reverse=not ascendic)
-    return {"countries": logic.countries}
+    return {
+        "countries": [
+            {"tag": t, "flag_name": logic.get_flag_name(t, data=cache[-1])}
+            for t in logic.countries
+        ]
+    }
 
-@app.get("/mods")
+@app.get("/mods", tags=["Загрузка файла"], summary="Добавить флаги стран из мода", description="Ну тут все и так понятно")
 def get_mod_flags(src: str = ""):
     if src:
         convert_files(src=src)
     return
 
-@app.get("/stats/{tag}")
+@app.get("/stats/{tag}", tags=["Статистика стран"], summary="Получить базовые статы стран", description="Ну возвращает словарь")
 def get_stats(tag: str, data=None):
     if data is None:
         data = cache[-1]
     return {
-        "gdp":                logic.getGDP(tag, data=data),
-        "population":         logic.get_population(tag, data=data),
-        "gdp_per_cap":        logic.get_GDP_per_capita(tag, data=data),
-        "money_activity":     logic.get_money_activity(tag, data=data),
-        "consuption":         logic.get_Consumption_economy(tag, data=data),
-        "supply":             logic.getSupply(tag, data=data),
-        "industrial_level":   logic.indPower(tag, data=data),
-        "subside_percent":    logic.get_subside_ind(tag, data=data),
-        "rentability":        logic.avg_rentability(tag, data=data),
-        "subside_pct":        logic.get_subside_ind(tag, data=data),
-        "diversification":    logic.get_diversification_ind(tag, data=data),
-        "gold_income":        logic.get_gold_mining(tag, data=data),
-        "country_savings":    logic.get_country_savings(tag, data=data),
-        "bank_savings":       logic.get_bank_savings(tag, data=data),
-        "population_savings": logic.get_all_pop_money(tag, data=data),
-        "money_mass":         logic.get_money_mass(tag, data=data),
-        "gini":               logic.real_gini(tag, data=data),
-        "fabric_employee":    logic.get_employed_fabric(tag, data=data),
+        "gdp":                  logic.getGDP(tag, data=data),
+        "population":           logic.get_population(tag, data=data),
+        "gdp_per_cap":          logic.get_GDP_per_capita(tag, data=data),
+        "money_activity":       logic.get_money_activity(tag, data=data),
+        "consuption":           logic.get_Consumption_economy(tag, data=data),
+        "supply":               logic.getSupply(tag, data=data),
+        "industrial_level":     logic.indPower(tag, data=data),
+        "subside_percent":      logic.get_subside_ind(tag, data=data),
+        "rentability":          logic.avg_rentability(tag, data=data),
+        "subside_pct":          logic.get_subside_ind(tag, data=data),
+        "diversification":      logic.get_diversification_ind(tag, data=data),
+        "gold_income":          logic.get_gold_mining(tag, data=data),
+        "country_savings":      logic.get_country_savings(tag, data=data),
+        "bank_savings":         logic.get_bank_savings(tag, data=data),
+        "population_savings":   logic.get_all_pop_money(tag, data=data),
+        "money_mass":           logic.get_money_mass(tag, data=data),
+        "gini":                 logic.real_gini(tag, data=data),
+        "fabric_employee":      logic.get_employed_fabric(tag, data=data),
         "fabric_unemployement": logic.fabric_uneployement(tag, data=data),
-        "rgo_employement":    logic.rgo_uneployement(tag, data=data),
-        "all_employemenent":  logic.get_all_employed(tag, data=data),
+        "rgo_employement":      logic.rgo_uneployement(tag, data=data),
+        "all_employemenent":    logic.get_all_employed(tag, data=data),
         "all_free_work_places": logic.get_all_work_places(tag, data=data),
         "fabric_worker_salary": logic.get_avg_salary(tag, data=data),
-        "capitalist_salary":  logic.get_avg_capilatils_salary(tag, data=data),
-        "literacy":           logic.get_literacy(tag, data=data),
-        "military_budget":    logic.get_army_budget(tag, data=data),
-        "naval_budget":       logic.get_naval_budget(tag, data=data),
-        "army_innov":         logic.army_innovation(tag, data=data),
-        "naval_innov":        logic.naval_innovation(tag, data=data),
-        "country_size":       logic.get_country_size(tag, data=data),
-        "population_per_reg": logic.population_per_reg(tag, data=data),
-        "gdp_per_reg":        logic.gdp_per_reg(tag, data=data),
-        "goverement":         logic.get_gov_type(tag, data=data),
-        "most_popular_party": logic.get_most_popular_patry(tag, data=data),
+        "capitalist_salary":    logic.get_avg_capilatils_salary(tag, data=data),
+        "literacy":             logic.get_literacy(tag, data=data),
+        "military_budget":      logic.get_army_budget(tag, data=data),
+        "naval_budget":         logic.get_naval_budget(tag, data=data),
+        "army_innov":           logic.army_innovation(tag, data=data),
+        "naval_innov":          logic.naval_innovation(tag, data=data),
+        "country_size":         logic.get_country_size(tag, data=data),
+        "population_per_reg":   logic.population_per_reg(tag, data=data),
+        "gdp_per_reg":          logic.gdp_per_reg(tag, data=data),
+        "goverement":           logic.get_gov_type(tag, data=data),
+        "most_popular_party":   logic.get_ruling_patry(tag, data=data),
+        "flag_name":            logic.get_flag_name(tag, data=data),
     }
 
-@app.get("/compare")
+@app.get("/compare", tags=["Статистика стран"], summary="Сравнение нескольких стран", description="Максимум 5 стран, в сравнение входит базовая статистика")
 def compare(tags: str):
     result = {}
     for tag in tags.split(","):
         result[tag] = get_stats(tag)
     return result
 
-@app.post("/time")
+@app.get("/war_history/{tag}", tags=["Статистика стран"], summary="Военная статистика страны", description="Топ 3 войны по потерям и их общая сумма")
+def get_wars(tag: str):
+    stats = {}
+    data = cache[0]
+    all_wars = logic.find_all_prev_wars_tag(tag, data)
+    all_wars = logic.wars_sort(all_wars, 3)
+    stats["biggest_wars"] = all_wars
+    stats["all_casualites"] = logic.country_war_history(tag, data)
+    return stats
+
+@app.post("/time", tags=["Временная прогрессия"], summary="Загрузка сейва прошлых лет", description="Будет проводится сравнение с текущим сохранением")
 def get_time_progression(body: LoadRequest):
     global time_past
     if not cache:
@@ -121,7 +137,7 @@ def get_time_progression(body: LoadRequest):
     logic.countries.sort(key=lambda x: logic.getGDP(x, data=data_present), reverse=True)
     return f"loaded {len(logic.countries)}!"
 
-@app.get("/time_compare/{tag}")
+@app.get("/time_compare/{tag}", tags=["Временная прогрессия"], summary="Отслеживание прогресса", description="Пока что внедрены только базовые показатели")
 def time_compare(tag: str):
     if time_past is None or not cache:
         return {}

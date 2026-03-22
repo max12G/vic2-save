@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { open } from "@tauri-apps/plugin-dialog"
-import { CountryStats, LoadResult } from "./types"
+import { CountryStats, CountryEntry, LoadResult } from "./types"
 import { StatsPanel } from "./components/StatsPanel"
 import { CompareView } from "./components/CompareView"
 import { TimeView, TimeData } from "./components/Timeview"
@@ -38,7 +38,7 @@ declare global {
 export default function App() {
   const statsCache = useRef<Map<string, CountryStats>>(new Map())
   const [saveLoaded, setSaveLoaded]   = useState(false)
-  const [countries, setCountries]     = useState<string[]>([])
+  const [countries, setCountries]     = useState<CountryEntry[]>([])
   const [search, setSearch]           = useState("")
   const [sortBy, setSortBy]           = useState("gdp")
   const [ascending, setAscending]     = useState(false)
@@ -56,12 +56,12 @@ export default function App() {
   const [modLoading, setModLoading]   = useState(false)
   const [theme, setTheme]             = useState<Theme>("victorian")
 
-  const [timePath1, setTimePath1]     = useState("")
-  const [timeLoaded, setTimeLoaded]   = useState(false)
-  const [timeCountries, setTimeCountries] = useState<string[]>([])
-  const [timeData, setTimeData]       = useState<TimeData | null>(null)
+  const [timePath1, setTimePath1]         = useState("")
+  const [timeLoaded, setTimeLoaded]       = useState(false)
+  const [timeCountries, setTimeCountries] = useState<CountryEntry[]>([])
+  const [timeData, setTimeData]           = useState<TimeData | null>(null)
   const [timeLoadingStats, setTimeLoadingStats] = useState(false)
-  const [selectedTimeTag, setSelectedTimeTag] = useState("")
+  const [selectedTimeTag, setSelectedTimeTag]   = useState("")
 
   useEffect(() => {
     document.body.setAttribute("data-theme", theme)
@@ -94,7 +94,8 @@ export default function App() {
   }
 
   async function handleOpenFile() {
-    statsCache.current.clear()  
+    statsCache.current.clear()
+    setSelectedForCompare([])
     let path: string | null = null
     if (window.__TAURI_INTERNALS__) {
       path = await open({
@@ -124,14 +125,8 @@ export default function App() {
   }
 
   async function handleLoadTime() {
-    if (!timePath1.trim()) {
-      setError("Укажи путь к файлу прошлого")
-      return
-    }
-    if (!saveLoaded) {
-      setError("Сначала загрузи основной файл")
-      return
-    }
+    if (!timePath1.trim()) { setError("Укажи путь к файлу прошлого"); return }
+    if (!saveLoaded)        { setError("Сначала загрузи основной файл"); return }
     setLoading(true)
     setError("")
     setTimeData(null)
@@ -150,6 +145,7 @@ export default function App() {
     }
     setLoading(false)
   }
+
   async function handleSelectTimeTag(tag: string) {
     setSelectedTimeTag(tag)
     setTimeLoadingStats(true)
@@ -176,7 +172,7 @@ export default function App() {
 
   async function handleSelectCountry(tag: string) {
     if (view === "compare") { toggleCompare(tag); return }
-    if (view === "time") { handleSelectTimeTag(tag); return }
+    if (view === "time")    { handleSelectTimeTag(tag); return }
     setSelectedCountry(tag)
     if (statsCache.current.has(tag)) {
       setStats(statsCache.current.get(tag)!)
@@ -185,7 +181,7 @@ export default function App() {
     setStatsLoading(true)
     try {
       const data = await apiFetch<CountryStats>(`/stats/${tag}`)
-      statsCache.current.set(tag, data) 
+      statsCache.current.set(tag, data)
       setStats(data)
     } catch (e: any) {
       setError(e.message)
@@ -214,13 +210,33 @@ export default function App() {
 
   const activeCountries = view === "time" ? timeCountries : countries
   const filteredCountries = activeCountries.filter(c =>
-    c.toLowerCase().includes(search.toLowerCase())
+    c.tag.toLowerCase().includes(search.toLowerCase())
   )
+
+  function CountryList({ items, activeTag, compareList }: {
+    items: CountryEntry[]
+    activeTag: string
+    compareList?: string[]
+  }) {
+    return (
+      <div className="country-list">
+        {items.map(({ tag, flag_name }) => (
+          <div key={tag}
+            className={`country-item ${activeTag === tag ? "active" : ""} ${compareList?.includes(tag) ? "in-compare" : ""}`}
+            onClick={() => handleSelectCountry(tag)}>
+            <img src={`/flags/${flag_name}.png`} alt={tag}
+              style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2, marginRight: 6, verticalAlign: "middle" }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} />
+            {tag}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="app">
 
-      {/* Модальное окно мода */}
       {showModModal && (
         <div className="modal-overlay" onClick={() => setShowModModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -279,41 +295,17 @@ export default function App() {
           )}
         </div>
 
-        {(saveLoaded && view !== "time") && (
-          <div className="country-list">
-            {filteredCountries.map(tag => (
-              <div key={tag}
-                className={`country-item ${selectedCountry === tag ? "active" : ""} ${selectedForCompare.includes(tag) ? "in-compare" : ""}`}
-                onClick={() => handleSelectCountry(tag)}>
-                <img src={`/flags/${tag}.png`} alt={tag}
-                  style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2, marginRight: 6, verticalAlign: "middle" }}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} />
-                {tag}
-              </div>
-            ))}
-          </div>
+        {saveLoaded && view !== "time" && (
+          <CountryList items={filteredCountries} activeTag={selectedCountry} compareList={selectedForCompare} />
         )}
-
         {view === "time" && timeLoaded && (
-          <div className="country-list">
-            {filteredCountries.map(tag => (
-              <div key={tag}
-                className={`country-item ${selectedTimeTag === tag ? "active" : ""}`}
-                onClick={() => handleSelectCountry(tag)}>
-                <img src={`/flags/${tag}.png`} alt={tag}
-                  style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2, marginRight: 6, verticalAlign: "middle" }}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} />
-                {tag}
-              </div>
-            ))}
-          </div>
+          <CountryList items={filteredCountries} activeTag={selectedTimeTag} />
         )}
-
         {!saveLoaded && view !== "time" && (
           <div className="sidebar-empty">Открой файл сохранения</div>
         )}
         {view === "time" && !timeLoaded && (
-          <div className="sidebar-empty">Загрузи два сохранения</div>
+          <div className="sidebar-empty">Загрузи сохранение из прошлого</div>
         )}
       </aside>
 
@@ -321,15 +313,9 @@ export default function App() {
         {(saveLoaded || view === "time") && (
           <div className="topbar">
             <div className="tabs">
-              <button className={`tab ${view === "stats" ? "active" : ""}`} onClick={() => setView("stats")}>
-                Статистика
-              </button>
-              <button className={`tab ${view === "time" ? "active" : ""}`} onClick={() => setView("time")}>
-                Динамика
-              </button>
-              <button className={`tab ${view === "compare" ? "active" : ""}`} onClick={() => setView("compare")}>
-                Сравнение
-              </button>
+              <button className={`tab ${view === "stats" ? "active" : ""}`} onClick={() => setView("stats")}>Статистика</button>
+              <button className={`tab ${view === "time" ? "active" : ""}`} onClick={() => setView("time")}>Динамика</button>
+              <button className={`tab ${view === "compare" ? "active" : ""}`} onClick={() => setView("compare")}>Сравнение</button>
             </div>
 
             {view === "compare" && (
@@ -381,17 +367,13 @@ export default function App() {
             </div>
           )}
 
-          {saveLoaded && view === "stats" && statsLoading && (
-            <div className="loading-state">Загрузка данных...</div>
-          )}
+          {saveLoaded && view === "stats" && statsLoading && <div className="loading-state">Загрузка данных...</div>}
           {saveLoaded && view === "stats" && !statsLoading && stats && <StatsPanel stats={stats} />}
           {saveLoaded && view === "stats" && !statsLoading && !stats && (
             <div className="placeholder">Выбери страну из списка слева</div>
           )}
 
-          {saveLoaded && view === "compare" && Object.keys(compareStats).length > 0 && (
-            <CompareView data={compareStats} />
-          )}
+          {saveLoaded && view === "compare" && Object.keys(compareStats).length > 0 && <CompareView data={compareStats} />}
           {saveLoaded && view === "compare" && Object.keys(compareStats).length === 0 && (
             <div className="placeholder">Отметь несколько стран в списке и нажми «Сравнить»</div>
           )}
@@ -400,7 +382,7 @@ export default function App() {
             <div className="welcome">
               <div className="welcome-icon">⏳</div>
               <h2>Динамика во времени</h2>
-              <p>Укажи два файла сохранения в строке выше и нажми «Загрузить»</p>
+              <p>Укажи файл прошлого сохранения в строке выше и нажми «Загрузить»</p>
             </div>
           )}
           {view === "time" && timeLoaded && (

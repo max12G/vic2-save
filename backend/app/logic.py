@@ -9,6 +9,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from get_fabric_req import stats
+from parties import *
 
 countries = []
 
@@ -21,7 +22,7 @@ goverments = {
     "prussian_constitutionalism": "Прусский конституцианолизм",
     "democracy": "Демократия",
     "presidential_dictatorship": "Президентская диктатура",
-    "proletariat_dictatorship": "Пролетарская диктатура",
+    "proletarian_dictatorship": "Пролетарская диктатура",
     "bourgeois_dictatorship": "Буржуазная диктатура",
     "fascist_dictatorship": "Фашистская диктатура",
               }
@@ -35,6 +36,17 @@ parties = {
     "anarcho_liberal": "Анархо-Либералы",
     "socialist": "Социализм",
 
+}
+
+ideology = {
+    "absolute_monarchy": "_monarchy",
+    "hms_government": "",
+    "prussian_constitutionalism": "",
+    "democracy": "_republic",
+    "presidential_dictatorship": "",
+    "proletarian_dictatorship": "_communist",
+    "bourgeois_dictatorship": "",
+    "fascist_dictatorship": "_fascist",
 }
 
 war_id = 0
@@ -964,7 +976,7 @@ def get_upper_house(tag, data=None):
         stats[name] = upper_house[party]
     return stats
 
-def get_most_popular_patry(tag, data=None):
+def get_ruling_patry(tag, data=None):
     stats = get_upper_house(tag, data)
     stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
     return stats[0][0]
@@ -1005,6 +1017,7 @@ def calculate_active_wars(data=None):
     global war_id
     all_wars = {}
     for war in data.find_all("active_war"):
+        start_date, end_date = 0, 0
         war_dict = {}
         attackers = []
         defenders = []
@@ -1012,7 +1025,8 @@ def calculate_active_wars(data=None):
         defend_loses = {}
         war_dict["name"] = war_id
         history = war["history"]
-        for event in history.values():
+        for date in history:
+            event = history[date]
             if isinstance(event, str):
                 continue
             if "add_attacker" in event.keys():
@@ -1045,19 +1059,28 @@ def calculate_previous_wars(data=None):
     global war_id
     all_wars = {}
     for war in data.find_all("previous_war"):
+        start_date, end_date = 0, 0
+        fl = True
         war_dict = {}
-        attackers = []
-        defenders = []
+        attackers = [war["original_attacker"]]
+        defenders = [war["original_defender"]]
         attack_loses = {}
         defend_loses = {}
-        war_dict["name"] = war_id
+        war_dict["id"] = war_id
+        war_dict["name"] = war["name"]
         history = war["history"]
-        for event in history.values():
+        for date in history:
+            if date != "battle":
+                if fl: 
+                    start_date = date
+                    fl = 0
+                end_date = date
+            event = history[date]
             if isinstance(event, str):
                 continue
-            if "add_attacker" in event.keys():
+            if "add_attacker" in event.keys() and event["add_attacker"] not in attackers:
                 attackers.append(event["add_attacker"])
-            if "add_defender" in event.keys():
+            if "add_defender" in event.keys() and event["add_defender"] not in defenders:
                 defenders.append(event["add_defender"])
             if "battle" in event.keys():
                 for battle in event.find_all("battle"):
@@ -1070,6 +1093,8 @@ def calculate_previous_wars(data=None):
             attack_loses[attacker["country"]] = attack_loses.get(attacker["country"], 0) + attacker["losses"] * 4
             defender = battle["defender"]
             defend_loses[defender["country"]] = defend_loses.get(defender["country"], 0) + defender["losses"] * 4
+        war_dict["start_date"] = str(start_date)
+        war_dict["end_date"] = str(end_date)
         war_dict["attackers"] = attackers
         war_dict["defenders"] = defenders
         war_dict["casualites_atk"] = attack_loses
@@ -1093,16 +1118,33 @@ def find_all_prev_wars_tag(tag, data):
 def calculate_all_casualites(war):
     return sum(war["casualites_atk"].values()) + sum(war["casualites_def"].values())
 
+def country_war_history(tag, data):
+    wars = find_all_prev_wars_tag(tag, data)
+    total_losses = 0
+    for _, war in wars.items():
+        if tag in war["attackers"]:
+            total_losses += war["casualites_atk"].get(tag, 0)
+        else:
+            total_losses += war["casualites_def"].get(tag, 0)
+    return total_losses
 
+def wars_sort(wars, top = -1):
+    wars = sorted(wars.items(), key = lambda x: calculate_all_casualites(x[1]))[:top]
+    return {id: war for id, war in wars}
 
+def get_flag_name(tag, data):
+    if tag not in data:
+        return tag
+    gov = data[tag]["government"]
+    name = ideology[gov]
+    return tag + name
 
 def parse_victoria2_save(file_path):
     try:
-        with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
+        with open(file_path, "r", encoding="CP1251", errors="ignore") as f:
             content = f.read()
         data = pyradox_txt.parse(content)
         return data
-        
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
@@ -1110,9 +1152,11 @@ def parse_victoria2_save(file_path):
 
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
-        
-    data = parse_victoria2_save(r"backend\test_data\siiiey1918_01_11.v2")
-    world_goods_price = data["worldmarket"]["price_pool"]
-    print(sorted(find_all_prev_wars_tag("ENG", data).items(), key = lambda x: calculate_all_casualites(x[1])))
+    data = parse_victoria2_save(r"C:\Users\User\Documents\parser\vic2-save\backend\test_data\siiiey1918_01_11.v2")
+    countries = [str(k) for k in data.keys()
+                 if len(str(k)) == 3 and str(k).isalpha() and str(k).isupper()
+                 and country_exists(tag=k, data=data)]
+    country_parties = prepare_paries(countries)
+    world_goods_price = data["worldmarket"]["price_pool"]   
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

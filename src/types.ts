@@ -1,3 +1,10 @@
+export interface CountryEntry {
+  tag: string
+  flag_name: string
+}
+export interface LoadResult { countries: CountryEntry[] }
+
+
 export interface CountryStats {
   tag: string
   gdp: number
@@ -34,8 +41,6 @@ export interface CountryStats {
   gdp_per_reg: number
   goverement: string
   most_popular_party: string
+  flag_name: string
 }
 
-export interface LoadResult {
-  countries: string[]
-}
