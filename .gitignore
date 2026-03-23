@@ -53,5 +53,4 @@ backend/build/server/
 
 
 *.local
-public/flags/
 .gitattributes
