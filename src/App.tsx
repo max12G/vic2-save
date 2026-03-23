@@ -335,7 +335,7 @@ export default function App() {
               <div style={{ display: "flex", gap: 6, flex: 1, alignItems: "center" }}>
                 <span style={{ color: "var(--text-dim)", fontSize: 11, whiteSpace: "nowrap" as const }}>Файл из прошлого:</span>
                 <input
-                  style={{ flex: 1, padding: "5px 8px", background: "var(--bg3)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 11, fontFamily: "Georgia, serif", outline: "none" }}
+                  style={{ flex: 1, padding: "5px 8px", background: "var(--bg3)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 11, fontFamily: "var(--font-main)", outline: "none" }}
                   placeholder="Путь к .v2 файлу..."
                   value={timePath1}
                   onChange={e => setTimePath1(e.target.value)}
@@ -347,7 +347,7 @@ export default function App() {
                   }} style={{ padding: "5px 8px", background: "var(--bg)", color: "var(--gold)", border: "1px solid var(--border)", cursor: "pointer" }}>…</button>
                 )}
                 <button onClick={handleLoadTime} disabled={loading || !timePath1.trim() || !saveLoaded}
-                  style={{ padding: "5px 14px", background: "var(--bg)", color: "var(--gold)", border: "1px solid var(--border)", fontSize: 11, fontFamily: "Georgia, serif", cursor: "pointer" }}>
+                  style={{ padding: "5px 14px", background: "var(--bg)", color: "var(--gold)", border: "1px solid var(--border)", fontSize: 11, fontFamily: "var(--font-main)", cursor: "pointer" }}>
                   {loading ? "..." : "Загрузить"}
                 </button>
                 {!saveLoaded && <span style={{ color: "var(--red)", fontSize: 10 }}>Сначала открой основной файл</span>}

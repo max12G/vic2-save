@@ -19,7 +19,9 @@ const FONT_FAMILY = "var(--font-main)"
 const FONT_STYLE = "var(--font-style)"
 
 export interface TimeData {
-  [date: string]: CountryStats
+  [date: string]: CountryStats | number | undefined; 
+  gdp_progression?: number;
+  population_progression?: number;
 }
 
 interface Props {
@@ -88,6 +90,7 @@ const METRICS = [
   { key: "gold_income",         label: "Золотодобыча",        format: fmt,                                       higherIsBetter: true },
   { key: "country_savings",     label: "Казна",               format: fmt,                                       higherIsBetter: true },
   { key: "money_mass",          label: "Денежная масса",      format: fmt,                                       higherIsBetter: true },
+
 ]
 
 const CHART_METRICS = [
@@ -99,9 +102,20 @@ const CHART_METRICS = [
 
 export function TimeView({ timeData, selectedTag, loading }: Props) {
   const cardStyle = { background: PANEL, border: `1px solid ${BORDER}`, padding: "16px 18px" }
-  const dates = timeData ? Object.keys(timeData).sort() : []
-  const s1 = dates[0] ? timeData![dates[0]] : null
-  const s2 = dates[1] ? timeData![dates[1]] : null
+  const dates = timeData 
+    ? Object.keys(timeData)
+        .filter(key => key.includes('.') && !isNaN(parseFloat(key))) 
+        .sort((a, b) => {
+          const partsA = a.split('.').map(Number);
+          const partsB = b.split('.').map(Number);
+          for (let i = 0; i < 3; i++) {
+            if (partsA[i] !== partsB[i]) return partsA[i] - partsB[i];
+          }
+          return 0;
+        })
+    : [];
+  const s1 = dates[0] ? (timeData![dates[0]] as CountryStats) : null
+  const s2 = dates[1] ? (timeData![dates[1]] as CountryStats) : null
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--text-muted)", fontStyle: "italic" }}>
@@ -150,10 +164,10 @@ export function TimeView({ timeData, selectedTag, loading }: Props) {
       {/* KPI */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
         {[
-          { label: "ВВП",        v1: Number(s1.gdp),        v2: Number(s2.gdp),        f: fmt,                        color: GOLD,   inv: false },
-          { label: "Население",  v1: Number(s1.population), v2: Number(s2.population), f: fmt,                        color: BLUE,   inv: false },
-          { label: "Грамотность",v1: Number(s1.literacy),   v2: Number(s2.literacy),   f: (v: any) => fix(v) + "%",   color: GREEN,  inv: false },
-          { label: "Джини",      v1: Number(s1.gini),       v2: Number(s2.gini),       f: (v: any) => fix(v, 3),      color: ORANGE, inv: true  },
+          { label: "ВВП",                            v1: Number(s1.gdp),        v2: Number(s2.gdp),         f: fmt,                           color: GOLD,   inv: false },
+          { label: "Население",                      v1: Number(s1.population), v2: Number(s2.population),  f: fmt,                           color: BLUE,   inv: false },
+          { label: "Грамотность",                    v1: Number(s1.literacy),   v2: Number(s2.literacy),    f: (v: any) => fix(v) + "%",      color: GREEN, inv: false },
+          { label: "Джини",                          v1: Number(s1.gini),       v2: Number(s2.gini),        f: (v: any) => fix(v, 3),         color: ORANGE, inv: true  },
         ].map(({ label, v1, v2, f, color, inv }) => {
           const diff = v2 - v1
           const pct = v1 !== 0 ? (diff / Math.abs(v1) * 100) : 0
@@ -162,7 +176,7 @@ export function TimeView({ timeData, selectedTag, loading }: Props) {
             <div key={label} style={{ background: PANEL, border: `1px solid ${BORDER}`, borderLeft: `2px solid ${color}`, padding: "12px 14px" }}>
               <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 1.5, marginBottom: 5, textTransform: "uppercase" as const }}>{label}</div>
               <div style={{ color: "#e8d5a8", fontSize: 18, fontFamily: FONT_FAMILY }}>{f(v2)}</div>
-              <div style={{ color: isPos ? GREEN : RED, fontSize: 10, marginTop: 3 }}>
+              <div style={{ color: isPos ? GREEN : RED, fontSize: 12, marginTop: 3 }}>
                 {diff > 0 ? "↑" : "↓"} {Math.abs(pct).toFixed(1)}% от {f(v1)}
               </div>
             </div>
@@ -170,12 +184,44 @@ export function TimeView({ timeData, selectedTag, loading }: Props) {
         })}
       </div>
 
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+      <div style={{ 
+        background: PANEL, 
+        border: `1px solid ${BORDER}`, borderLeft: `3px solid ${GOLD}`, padding: "14px" 
+      }}>
+        <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 1.5, marginBottom: 4 }}>СРЕДНЕГОДОВОЙ РОСТ ВВП</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ color: GOLD, fontSize: 24, fontFamily: FONT_FAMILY }}>
+            {fix(timeData?.gdp_progression, 2)}%
+          </span>
+          <span style={{ color: GREEN, fontSize: 11, fontWeight: "bold" }}>В ГОД</span>
+        </div>
+      </div>
+
+      <div style={{ 
+        background: PANEL, 
+        border: `1px solid ${BORDER}`, borderLeft: `3px solid ${GOLD}`, padding: "14px" 
+      }}>
+        <div style={{ color: TEXTDIM, fontSize: 9, letterSpacing: 1.5, marginBottom: 4 }}>ПРИРОСТ НАСЕЛЕНИЯ</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ color: GOLD, fontSize: 24, fontFamily: FONT_FAMILY }}>
+            {fix(timeData?.population_progression, 2)}%
+          </span>
+          <span style={{ color: GREEN, fontSize: 11, fontWeight: "bold" }}>В ГОД</span>
+        </div>
+      </div>
+    </div>
+
       {/* Графики */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {CHART_METRICS.map(({ key, label, color }) => {
-          const chartData = dates.map(date => ({
-            date, value: Number(timeData[date][key as keyof CountryStats]) || 0,
-          }))
+          const chartData = dates.map(date => {
+            const stats = timeData[date] as CountryStats;
+            return {
+              date,
+              value: Number(stats[key as keyof CountryStats]) || 0,
+            }
+          })
           return (
             <div key={key} style={cardStyle}>
               <SectionTitle>{label}</SectionTitle>
@@ -184,7 +230,7 @@ export function TimeView({ timeData, selectedTag, loading }: Props) {
                   <CartesianGrid stroke={BORDER2} strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fill: TEXTDIM, fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tickFormatter={fmt} tick={{ fill: TEXTDIM, fontSize: 10 }} axisLine={false} tickLine={false} width={45} />
-                  <Tooltip contentStyle={{ background: "var(--bg)", border: `1px solid ${BORDER}`, color: TEXT, fontFamily: "Georgia, serif", fontSize: 12 }} formatter={(v: any) => [fmt(v), label]} />
+                  <Tooltip contentStyle={{ background: "var(--bg)", border: `1px solid ${BORDER}`, color: TEXT, fontFamily: FONT_FAMILY, fontSize: 12 }} formatter={(v: any) => [fmt(v), label]} />
                   <Line dataKey="value" stroke={color} strokeWidth={2} dot={{ fill: color, r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>

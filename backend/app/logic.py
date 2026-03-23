@@ -1095,10 +1095,10 @@ def calculate_previous_wars(data=None):
             defend_loses[defender["country"]] = defend_loses.get(defender["country"], 0) + defender["losses"] * 4
         war_dict["start_date"] = str(start_date)
         war_dict["end_date"] = str(end_date)
-        war_dict["attackers"] = attackers
-        war_dict["defenders"] = defenders
         war_dict["casualites_atk"] = attack_loses
         war_dict["casualites_def"] = defend_loses
+        war_dict["attackers"] = list(set(attack_loses.keys()) | set(attackers))
+        war_dict["defenders"] = list(set(defend_loses.keys()) | set(defenders))
         war_dict["total_losses"] = calculate_all_casualites(war_dict)
         if defend_loses != {} and attack_loses != {}:
             all_wars[war_id] = war_dict
@@ -1128,8 +1128,8 @@ def country_war_history(tag, data):
             total_losses += war["casualites_def"].get(tag, 0)
     return total_losses
 
-def wars_sort(wars, top = -1):
-    wars = sorted(wars.items(), key = lambda x: calculate_all_casualites(x[1]))[:top]
+def wars_sort(wars, top = -1, rev = False):
+    wars = sorted(wars.items(), key = lambda x: x[1]["total_losses"], reverse=not(rev))[:top]
     return {id: war for id, war in wars}
 
 def get_flag_name(tag, data):
@@ -1138,6 +1138,14 @@ def get_flag_name(tag, data):
     gov = data[tag]["government"]
     name = ideology[gov]
     return tag + name
+
+def get_progression(start, end, date1, date2):
+    date1 = list(map(int, date1.split(".")))
+    date2 = list(map(int, date2.split(".")))
+    days = (date2[0] - date1[0]) * 365 + (date2[1] - date1[1]) * 30 + (date2[2] - date1[2])
+    n = days / 365
+    return round(((end / start) ** (1 / n) - 1) * 100, 2)
+
 
 def parse_victoria2_save(file_path):
     try:
@@ -1150,13 +1158,16 @@ def parse_victoria2_save(file_path):
         return None
 
 
+
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
-    data = parse_victoria2_save(r"C:\Users\User\Documents\parser\vic2-save\backend\test_data\siiiey1918_01_11.v2")
+    data = parse_victoria2_save(r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2005_08_29.v2")
     countries = [str(k) for k in data.keys()
                  if len(str(k)) == 3 and str(k).isalpha() and str(k).isupper()
                  and country_exists(tag=k, data=data)]
     country_parties = prepare_paries(countries)
     world_goods_price = data["worldmarket"]["price_pool"]   
+    wars = find_all_prev_wars_tag("ENG", data)
+    print(wars_sort(wars, 10))
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

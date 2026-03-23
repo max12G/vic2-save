@@ -19,7 +19,7 @@ class LoadRequest(BaseModel):
 
 def parse_victoria2_save(file_path):
     try:
-        with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
+        with open(file_path, "r", encoding="CP1251", errors="ignore") as f:
             content = f.read()
         content = re.sub(r'(bank=-?\d+\.\d+)\d{2}\.\d+', r'\1', content)
         data = pyradox_txt.parse(content)
@@ -39,6 +39,9 @@ def load_save(body: LoadRequest):
     #C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2
     #C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2004_01_01.v2
     #C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2005_08_29.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1880.v2
+    #C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1892.v2
     logic.world_goods_price = data["worldmarket"]["price_pool"]
     logic.countries = [str(k) for k in data.keys()
                  if len(str(k)) == 3 and str(k).isalpha() and str(k).isupper()
@@ -110,15 +113,20 @@ def compare(tags: str):
         result[tag] = get_stats(tag)
     return result
 
-@app.get("/war_history/{tag}", tags=["Статистика стран"], summary="Военная статистика страны", description="Топ 3 войны по потерям и их общая сумма")
-def get_wars(tag: str):
+@app.get("/war_history/{tag}", tags=["Статистика стран"], summary="Военная статистика страны", description="Топ n войн по потерям и их общая сумма")
+def get_wars(tag: str, n: int = 5, reverse: bool = False):
     stats = {}
     data = cache[0]
     all_wars = logic.find_all_prev_wars_tag(tag, data)
-    all_wars = logic.wars_sort(all_wars, 3)
-    stats["biggest_wars"] = all_wars
+    stats["biggest_wars"] = logic.wars_sort(all_wars, n, reverse)
     stats["all_casualites"] = logic.country_war_history(tag, data)
-    return stats
+    war_list = []
+    for war_id, war in stats["biggest_wars"].items():
+        war_item = {"id": war_id}
+        war_item.update(war)
+        war_list.append(war_item)
+    war_list.append(stats["all_casualites"])
+    return war_list
 
 @app.post("/time", tags=["Временная прогрессия"], summary="Загрузка сейва прошлых лет", description="Будет проводится сравнение с текущим сохранением")
 def get_time_progression(body: LoadRequest):
@@ -142,8 +150,12 @@ def time_compare(tag: str):
     if time_past is None or not cache:
         return {}
     stack = {}
-    stack[str(time_past["date"])]  = get_stats(tag, time_past)
-    stack[str(cache[-1]["date"])]  = get_stats(tag, cache[-1])
+    date1 = str(time_past["date"])
+    date2 = str(cache[-1]["date"])
+    stack[date1] = get_stats(tag, time_past)
+    stack[date2] = get_stats(tag, cache[-1])
+    stack["gdp_progression"] = logic.get_progression(stack[date1]["gdp"], stack[date2]["gdp"], date1, date2)
+    stack["population_progression"] = logic.get_progression(stack[date1]["population"], stack[date2]["population"], date1, date2)
     return stack
 
 if __name__ == "__main__":
