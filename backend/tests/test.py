@@ -27,7 +27,7 @@ def test_parse_big_save():
 def test_server():
     directory = os.path.join(parent_dir, r"test_data\siiiey1918_01_11.v2")
     body = Request()
-    body.path = directory
+    body.path = [directory]
     server.load_save(body)
     result = server.get_countries("gdp")
-    assert result["countries"][0] == "JAP"
+    assert result["countries"][0]["tag"] == "JAP"

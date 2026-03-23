@@ -4,6 +4,24 @@ export interface CountryEntry {
 }
 export interface LoadResult { countries: CountryEntry[] }
 
+export interface WarEntry {
+  id: number
+  name: string
+  start_date: string
+  end_date: string
+  attackers: string[]
+  defenders: string[]
+  casualites_atk: Record<string, number>  
+  casualites_def: Record<string, number>
+  total_losses: number
+}
+
+export type WarHistory = (WarEntry | number)[]
+
+export interface WarStats {
+  wars: WarEntry[]
+  total_casualites: number
+}
 
 export interface CountryStats {
   tag: string

@@ -4,6 +4,7 @@ import { CountryStats, CountryEntry, LoadResult } from "./types"
 import { StatsPanel } from "./components/StatsPanel"
 import { CompareView } from "./components/CompareView"
 import { TimeView, TimeData } from "./components/Timeview"
+import { WarHistoryView } from "./components/Wars"
 import "./App.css"
 
 const API = "http://localhost:8000"
@@ -17,7 +18,7 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json()
 }
 
-type View = "stats" | "compare" | "time"
+type View = "stats" | "compare" | "time" | "war"
 type Theme = "victorian" | "classic"
 
 const SORT_OPTIONS = [
@@ -62,6 +63,10 @@ export default function App() {
   const [timeData, setTimeData]           = useState<TimeData | null>(null)
   const [timeLoadingStats, setTimeLoadingStats] = useState(false)
   const [selectedTimeTag, setSelectedTimeTag]   = useState("")
+
+  const [warData, setWarData] = useState<any[] | null>(null)
+  const [warLoading, setWarLoading] = useState(false)
+  const [selectedWarTag, setSelectedWarTag] = useState("")
 
   useEffect(() => {
     document.body.setAttribute("data-theme", theme)
@@ -173,6 +178,7 @@ export default function App() {
   async function handleSelectCountry(tag: string) {
     if (view === "compare") { toggleCompare(tag); return }
     if (view === "time")    { handleSelectTimeTag(tag); return }
+    if (view === "war")     { handleSelectWarTag(tag); return }
     setSelectedCountry(tag)
     if (statsCache.current.has(tag)) {
       setStats(statsCache.current.get(tag)!)
@@ -206,6 +212,20 @@ export default function App() {
       setError(e.message)
     }
     setLoading(false)
+  }
+  
+
+  async function handleSelectWarTag(tag: string) {
+    setSelectedWarTag(tag)
+    setWarLoading(true)
+    setError("")
+    try {
+      const data = await apiFetch<any[]>(`/war_history/${tag}?n=10`)
+      setWarData(data)
+    } catch (e: any) {
+      setError(e.message)
+    }
+    setWarLoading(false)
   }
 
   const activeCountries = view === "time" ? timeCountries : countries
@@ -314,6 +334,7 @@ export default function App() {
           <div className="topbar">
             <div className="tabs">
               <button className={`tab ${view === "stats" ? "active" : ""}`} onClick={() => setView("stats")}>Статистика</button>
+              <button className={`tab ${view === "war" ? "active" : ""}`} onClick={() => setView("war")}>Военная история</button>
               <button className={`tab ${view === "time" ? "active" : ""}`} onClick={() => setView("time")}>Динамика</button>
               <button className={`tab ${view === "compare" ? "active" : ""}`} onClick={() => setView("compare")}>Сравнение</button>
             </div>
@@ -387,6 +408,13 @@ export default function App() {
           )}
           {view === "time" && timeLoaded && (
             <TimeView timeData={timeData} selectedTag={selectedTimeTag} loading={timeLoadingStats} />
+          )}
+          {saveLoaded && view === "war" && (
+            <WarHistoryView 
+              warData={warData} 
+              selectedTag={selectedWarTag} 
+              loading={warLoading} 
+            />
           )}
         </div>
       </div>

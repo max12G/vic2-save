@@ -115,7 +115,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 0;
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font-main);
   outline: none;
 }
