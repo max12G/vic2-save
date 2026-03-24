@@ -2,12 +2,12 @@ from PIL import Image
 import os
 
 
-def convert_files(src, dst = r"public\flags"):
+def convert_files(src, dst=r"public\flags"):
     for file in os.listdir(src):
         if file.endswith(".tga"):
             img = Image.open(os.path.join(src, file))
             name = file.replace(".tga", ".png")
-            img.save(os.path.join(dst, name))   
+            img.save(os.path.join(dst, name))
             print(f"✓ {name}")
 
 

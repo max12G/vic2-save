@@ -3,21 +3,24 @@ from pyradox.datatype import time as pyradox_time
 import os
 import sys
 
+
 def parse_victoria2_file(file_path):
     try:
         with open(file_path, "r", encoding="windows-1252", errors="ignore") as f:
             content = f.read()
         data = pyradox_txt.parse(content)
         return data
-        
+
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
-    
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 data = parse_victoria2_file(os.path.join(current_dir, "data", "production_types.txt"))
 factories = [k for k in data.keys() if data[k]["input_goods"] != None]
+
+
 def get_factory_info(factory):
     input_goods = factory["input_goods"]
     inp = {}
@@ -28,10 +31,10 @@ def get_factory_info(factory):
     out = {}
     good = factory["output_goods"]
     out[good] = factory["value"]
-    
+
     return inp, out
+
 
 stats = {}
 for fac in factories:
     stats[fac] = get_factory_info(data[fac])
-

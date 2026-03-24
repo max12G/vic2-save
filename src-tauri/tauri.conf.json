@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "victoria2-save",
+  "productName": "Victoria II save analizer",
   "version": "0.1.0",
   "identifier": "com.user.victoria2-save",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "victoria2-save",
+        "title": "vic2-save",
         "width": 1280,
         "height": 800,
         "minWidth": 900,

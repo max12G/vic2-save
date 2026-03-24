@@ -1,7 +1,17 @@
-# Tauri + Vanilla TS
+![Build Status](https://github.com/max12G/vic2-save/actions/workflows/release.yml/badge.svg)
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Typescript.
+# Victoria II Save Analyzer
 
-## Recommended IDE Setup
+Simple desktop app for analyze vic2 saves. Includes GDP, Population, many economic modifiers and other stuff.
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Current features
+
+Country stats >> GDP, GDP per capita, GDP per reg, profitability, gini index, money_activity, unemployement, military budget
+
+And history progression, war history, countries compare
+
+## How to use
+
+1. Go to the [Releases](https://github.com/max12G/vic2-save/releases) page.
+2. Download the latest `victoria2-save.exe`.
+3. Run the app and select your `.v2` save file.

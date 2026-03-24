@@ -1,7 +1,8 @@
 import os
 from pyradox import txt as pyradox_txt
 
-'''НЕ РАБОТАЕТ'''
+"""НЕ РАБОТАЕТ"""
+
 
 def parse_victoria2_file(file_path):
     try:
@@ -9,7 +10,7 @@ def parse_victoria2_file(file_path):
             content = f.read()
         data = pyradox_txt.parse(content)
         return data
-        
+
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
@@ -41,8 +42,9 @@ def rename_files():
             new_path = os.path.join(dst, name + ".txt")
             os.rename(old_path, new_path)
             print(f"renamed {file} to {name}")
-        except :
+        except:
             pass
+
 
 def prepare_paries(countries):
     parties = {}
@@ -58,7 +60,8 @@ def prepare_paries(countries):
             count += 1
         if not countries:
             break
-    return parties 
+    return parties
+
 
 if __name__ == "__main__":
     rename_files()
