@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from get_fabric_req import stats
 from parties import *
+import math
 
 countries = []
 
@@ -1524,6 +1525,26 @@ def get_progression(start, end, date1, date2):
     return round(((end / start) ** (1 / n) - 1) * 100, 2)
 
 
+def find_when(st1, st2, p1, p2, start_date = 0):
+    date = list(map(int, start_date.split('.')))
+    start_date = (
+        (date[0]) * 365 + (date[1]) * 30 + (date[2])
+    )
+    p1 = 1 + p1 / 100
+    p2 = 1 + p2 / 100
+    if st1 > st2:
+        return 1
+    t = math.log(st1 / st2, p2 / p1)
+    if t < 0:
+        return -1
+    t += start_date / 365
+    years = int(t)
+    t_month = (t - years) * 12
+    month = int(t_month) + 1
+    days = int((t_month - month + 1) * 30)
+    return f"{years}.{month}.{days}"
+
+
 def parse_victoria2_save(file_path):
     try:
         with open(file_path, "r", encoding="CP1251", errors="ignore") as f:
@@ -1537,6 +1558,8 @@ def parse_victoria2_save(file_path):
 
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
+    wars = find_when(15000, 28400, 4.35, 2)
+    print(wars)
     data = parse_victoria2_save(
         r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2"
     )
@@ -1550,7 +1573,6 @@ if __name__ == "__main__":
     ]
     country_parties = prepare_paries(countries)
     world_goods_price = data["worldmarket"]["price_pool"]
-    wars = find_all_prev_wars_tag("RUS", data)
-    print(wars)
+    
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

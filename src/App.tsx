@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { open } from "@tauri-apps/plugin-dialog"
 import { CountryStats, CountryEntry, LoadResult } from "./types"
 import { StatsPanel } from "./components/StatsPanel"
@@ -37,7 +37,6 @@ declare global {
 }
 
 export default function App() {
-  const statsCache = useRef<Map<string, CountryStats>>(new Map())
   const [saveLoaded, setSaveLoaded]   = useState(false)
   const [countries, setCountries]     = useState<CountryEntry[]>([])
   const [search, setSearch]           = useState("")
@@ -99,7 +98,6 @@ export default function App() {
   }
 
   async function handleOpenFile() {
-    statsCache.current.clear()
     setSelectedForCompare([])
     let path: string | null = null
     if (window.__TAURI_INTERNALS__) {
@@ -180,14 +178,9 @@ export default function App() {
     if (view === "time")    { handleSelectTimeTag(tag); return }
     if (view === "war")     { handleSelectWarTag(tag); return }
     setSelectedCountry(tag)
-    if (statsCache.current.has(tag)) {
-      setStats(statsCache.current.get(tag)!)
-      return
-    }
     setStatsLoading(true)
     try {
       const data = await apiFetch<CountryStats>(`/stats/${tag}`)
-      statsCache.current.set(tag, data)
       setStats(data)
     } catch (e: any) {
       setError(e.message)
@@ -407,7 +400,12 @@ export default function App() {
             </div>
           )}
           {view === "time" && timeLoaded && (
-            <TimeView timeData={timeData} selectedTag={selectedTimeTag} loading={timeLoadingStats} />
+            <TimeView
+              timeData={timeData}
+              selectedTag={selectedTimeTag}
+              loading={timeLoadingStats}
+              countries={timeCountries}
+            />
           )}
           {saveLoaded && view === "war" && (
             <WarHistoryView 
