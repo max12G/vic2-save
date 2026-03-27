@@ -15,10 +15,11 @@ class Request:
 
 
 def test_parse_save():
-    directory = os.path.join(parent_dir, r"test_data\siiiey1918_01_11.v2")
+    directory = os.path.join(parent_dir, r"test_data/GER1860.v2")
     result = parse_victoria2_save(directory)
-    assert result["player"] == "JAP"
-    assert result["date"] == "1918.1.11"
+    print(result)
+    assert result["player"] == "GER"
+    assert result["date"] == "1860.4.15"
 
 
 def test_parse_big_save():
@@ -29,9 +30,9 @@ def test_parse_big_save():
 
 
 def test_server():
-    directory = os.path.join(parent_dir, r"test_data\siiiey1918_01_11.v2")
+    directory = os.path.join(parent_dir, r"test_data\GER1860.v2")
     body = Request()
     body.path = [directory]
     server.load_save(body)
     result = server.get_countries("gdp")
-    assert result["countries"][0]["tag"] == "JAP"
+    assert result["countries"][0]["tag"] == "ENG"
