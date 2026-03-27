@@ -9,7 +9,6 @@ from sort_functions import safe_sort
 from flags_convert import convert_files
 from datetime import datetime
 
-
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
 
@@ -158,7 +157,6 @@ def get_stats(tag: str, data=None):
             t = list(country_stats[date].keys())[0]
             country_stats[date].pop(t)
         return country
-    
 
 
 @app.get(
@@ -254,7 +252,7 @@ def time_compare(tag: str):
     "/time_compare/{tag1}/progression/{tag2}",
     tags=["Временная прогрессия"],
     summary="Дата, когда показатели одной страны достигнут другой страны",
-    description="-1 - Никогда не достигнет с текущими темпами роста, 1 - уже больше"
+    description="-1 - Никогда не достигнет с текущими темпами роста, 1 - уже больше",
 )
 def get_progression(tag1: str, tag2: str):
     global time_cache, cache
@@ -284,6 +282,7 @@ def get_progression(tag1: str, tag2: str):
     answer["date_to_gdp_compare"] = gdp_date
     answer["date_to_pop_compare"] = pop_date
     return answer
+
 
 if __name__ == "__main__":
     import uvicorn

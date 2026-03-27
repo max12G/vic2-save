@@ -21,10 +21,12 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
-      - name: Check Formattig
+      - name: Formattig
         run: |
           pip install black
-          black --check backend/
+          cd backend
+          black .
+          black --check .
       
       - name: Lint with Fl8
         run: |

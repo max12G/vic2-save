@@ -25,7 +25,7 @@ def country_exists(tag, data=None):
     return get_country_size(tag, data) != 0
 
 
-def uravnilovka(per = 0.5, tag = None, data = None):
+def uravnilovka(per=0.5, tag=None, data=None):
     country = data[tag]
     pop_types = [
         "farmers",
@@ -56,7 +56,6 @@ def uravnilovka(per = 0.5, tag = None, data = None):
                 for pop in all_pops:
                     savings.append(pop["money"])
     savings = formulas.divide(savings)
-    print(savings)
     ind = 0
     states = data[tag].find_all("state")
     for state in states:
@@ -80,13 +79,13 @@ def parse_victoria2_save(file_path):
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
-    
+
 
 def load_red_save(file_path, save_data: pyradox.Tree):
-    with open(file_path, 'w', encoding='CP1251') as f:
-        
+    with open(file_path, "w", encoding="CP1251") as f:
+
         done = save_data.prettyprint()
-        fixed_file = re.sub(r'(\d+)\.(?!\d)', r'\1.0', done)
+        fixed_file = re.sub(r"(\d+)\.(?!\d)", r"\1.0", done)
         f.write(fixed_file.replace(" = ", "="))
 
 
@@ -110,7 +109,7 @@ if __name__ == "__main__":
         save_data = uravnilovka(0.5, tag, save_data)
     load_red_save(
         r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER_TEST.v2",
-        save_data
+        save_data,
     )
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

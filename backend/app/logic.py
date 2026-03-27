@@ -1371,22 +1371,30 @@ def calculate_active_wars(data=None):
 def sum_battle_units(battle):
     total = 0
     forbidden = ["country", "leader", "losses"]
-    for key,value in battle["attacker"].items():
+    for key, value in battle["attacker"].items():
         if key in forbidden:
             continue
         total += value
-    for key,value in battle["defender"].items():
+    for key, value in battle["defender"].items():
         if key in forbidden:
             continue
         total += value
-    
+
     return total
-    
+
 
 def calculate_previous_wars(data=None):
     global war_id
     all_wars = {}
-    melee_types = ["artillery", "dragoon", "infantry", "tank", "engineer", "hussar", "irregular"]
+    melee_types = [
+        "artillery",
+        "dragoon",
+        "infantry",
+        "tank",
+        "engineer",
+        "hussar",
+        "irregular",
+    ]
     for war in data.find_all("previous_war"):
         start_date, end_date = 0, 0
         fl = True
@@ -1534,10 +1542,10 @@ def parse_victoria2_save(file_path):
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
-    
+
 
 def load_red_save(file_path, save_data):
-    with open(file_path, 'w', encoding='CP1251') as f:
+    with open(file_path, "w", encoding="CP1251") as f:
         f.write(str(save_data))
 
 
@@ -1548,10 +1556,10 @@ if __name__ == "__main__":
         r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2"
     )
     save_data = data
-    save_data["player"] = "ENG" 
+    save_data["player"] = "ENG"
     load_red_save(
         r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2",
-        save_data
+        save_data,
     )
     countries = [
         str(k)
@@ -1563,6 +1571,6 @@ if __name__ == "__main__":
     ]
     country_parties = prepare_paries(countries)
     world_goods_price = data["worldmarket"]["price_pool"]
-    
+
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

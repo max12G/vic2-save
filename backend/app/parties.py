@@ -61,7 +61,7 @@ def prepare_paries(countries):
                 count += 1
             if not countries:
                 break
-        except :
+        except:
             pass
     return parties
 
