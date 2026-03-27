@@ -50,16 +50,19 @@ def prepare_paries(countries):
     parties = {}
     count = 1
     for tag in countries:
-        data = parse_victoria2_file(os.path.join(dst, tag + ".txt"))
-        p = data["party"]
-        if p is None:
-            continue
-        parties[tag] = {}
-        for party in data.find_all("party"):
-            parties[tag][count] = party["ideology"]
-            count += 1
-        if not countries:
-            break
+        try:
+            data = parse_victoria2_file(os.path.join(dst, tag + ".txt"))
+            p = data["party"]
+            if p is None:
+                continue
+            parties[tag] = {}
+            for party in data.find_all("party"):
+                parties[tag][count] = party["ideology"]
+                count += 1
+            if not countries:
+                break
+        except :
+            pass
     return parties
 
 

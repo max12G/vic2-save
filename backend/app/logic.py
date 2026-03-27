@@ -1,4 +1,4 @@
-from pyradox import txt as pyradox_txt
+import pyradox
 from pyradox.datatype import time as pyradox_time
 import sys
 import re
@@ -1525,43 +1525,33 @@ def get_progression(start, end, date1, date2):
     return round(((end / start) ** (1 / n) - 1) * 100, 2)
 
 
-def find_when(st1, st2, p1, p2, start_date = 0):
-    date = list(map(int, start_date.split('.')))
-    start_date = (
-        (date[0]) * 365 + (date[1]) * 30 + (date[2])
-    )
-    p1 = 1 + p1 / 100
-    p2 = 1 + p2 / 100
-    if st1 > st2:
-        return 1
-    t = math.log(st1 / st2, p2 / p1)
-    if t < 0:
-        return -1
-    t += start_date / 365
-    years = int(t)
-    t_month = (t - years) * 12
-    month = int(t_month) + 1
-    days = int((t_month - month + 1) * 30)
-    return f"{years}.{month}.{days}"
-
-
 def parse_victoria2_save(file_path):
     try:
         with open(file_path, "r", encoding="CP1251", errors="ignore") as f:
             content = f.read()
-        data = pyradox_txt.parse(content)
+        data = pyradox.txt.parse(content)
         return data
     except Exception as e:
         print(f"Ошибка при парсинге: {e}")
         return None
+    
+
+def load_red_save(file_path, save_data):
+    with open(file_path, 'w', encoding='CP1251') as f:
+        f.write(str(save_data))
 
 
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
-    wars = find_when(15000, 28400, 4.35, 2)
-    print(wars)
+    print(dir(pyradox.Tree))
     data = parse_victoria2_save(
-        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2"
+        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2"
+    )
+    save_data = data
+    save_data["player"] = "ENG" 
+    load_red_save(
+        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2",
+        save_data
     )
     countries = [
         str(k)

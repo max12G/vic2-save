@@ -4,9 +4,11 @@ from pydantic import BaseModel
 import re
 from pyradox import txt as pyradox_txt
 import logic
+import formulas
 from sort_functions import safe_sort
 from flags_convert import convert_files
 from datetime import datetime
+
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
@@ -41,6 +43,7 @@ def parse_victoria2_save(file_path):
 )
 def load_save(body: LoadRequest):
     global cache, country_stats
+    logic.countries = []
     country_stats = {}
     path = body.path
     data = parse_victoria2_save(path[-1])
@@ -50,7 +53,7 @@ def load_save(body: LoadRequest):
     cache.clear()
     cache.append(data)
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2
-    # C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2004_01_01.v2
+    # C:/Users  /User/Documents/parser/vic2-save/backend/test_data/Dinney2004_01_01.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2005_08_29.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1880.v2
@@ -151,9 +154,9 @@ def get_stats(tag: str, data=None):
             "flag_name": logic.get_flag_name(tag, data=data),
         }
         country_stats[date][tag] = country
-        if len(country_stats[date][tag]) > 5:
+        if len(country_stats[date].keys()) > 5:
             t = list(country_stats[date].keys())[0]
-            del country_stats[date][t]
+            country_stats[date].pop(t)
         return country
     
 
@@ -266,8 +269,8 @@ def get_progression(tag1: str, tag2: str):
     per_gdp2 = stack2["gdp_progression"]
     per_pop1 = stack1["population_progression"]
     per_pop2 = stack2["population_progression"]
-    gdp_date = logic.find_when(gdp1, gdp2, per_gdp1, per_gdp2, date)
-    pop_date = logic.find_when(pop1, pop2, per_pop1, per_pop2, date)
+    gdp_date = formulas.find_when(gdp1, gdp2, per_gdp1, per_gdp2, date)
+    pop_date = formulas.find_when(pop1, pop2, per_pop1, per_pop2, date)
     answer = {}
     answer["start-date"] = date
     if gdp_date == 1:
