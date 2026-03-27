@@ -59,4 +59,3 @@ backend/build/server/
 *.local
 public/flags/
 .gitattributes
-backend/app/formulas.py
