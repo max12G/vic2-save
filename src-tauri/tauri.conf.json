@@ -34,10 +34,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["binaries/server"],
-    "resources": {
-      "binaries/server-x86_64-pc-windows-msvc.exe": "server.exe",
-      "../public/flags/*": "public/flags"
-    }
+    "externalBin": [
+      "binaries/server"
+    ],
+    "resources": [
+      "../public/flags/*"
+    ]
   }
 }
