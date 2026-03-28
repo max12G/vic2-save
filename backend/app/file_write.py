@@ -25,7 +25,7 @@ def country_exists(tag, data=None):
     return get_country_size(tag, data) != 0
 
 
-def uravnilovka(per=0.5, tag=None, data=None, func = math.sqrt):
+def uravnilovka(per=0.5, tag=None, data=None, func=math.sqrt):
     country = data[tag]
     pop_types = [
         "farmers",
