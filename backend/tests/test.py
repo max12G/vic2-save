@@ -23,14 +23,14 @@ def test_parse_save():
 
 
 def test_parse_big_save():
-    directory = os.path.join(parent_dir, r"test_data\Dinney2005_08_29.v2")
+    directory = os.path.join(parent_dir, r"test_data/Dinney2005_08_29.v2")
     result = parse_victoria2_save(directory)
     assert result["player"] == "RUS"
     assert result["date"] == "2005.8.29"
 
 
 def test_server():
-    directory = os.path.join(parent_dir, r"test_data\GER1860.v2")
+    directory = os.path.join(parent_dir, r"test_data/GER1860.v2")
     body = Request()
     body.path = [directory]
     server.load_save(body)
