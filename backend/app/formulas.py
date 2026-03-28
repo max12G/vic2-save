@@ -20,12 +20,15 @@ def find_when(st1, st2, p1, p2, start_date = 0):
     return f"{years}.{month}.{days}"
 
 
-def divide(pops: list = []) -> list:
+def divide(pops: list = [], func: callable = math.sqrt) -> list:
     weights = []
     total = 0
     for cash in pops:
-        weights.append(math.sqrt(cash))
-        total += weights[-1]
+        try:
+            weights.append(func(cash))
+            total += weights[-1]
+        except :
+            weights.append(0)
     for i in range(len(pops)):
         pops[i] = weights[i] / total * 100
     return pops

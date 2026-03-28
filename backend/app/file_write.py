@@ -25,7 +25,7 @@ def country_exists(tag, data=None):
     return get_country_size(tag, data) != 0
 
 
-def uravnilovka(per=0.5, tag=None, data=None):
+def uravnilovka(per=0.5, tag=None, data=None, func = math.sqrt):
     country = data[tag]
     pop_types = [
         "farmers",
@@ -55,7 +55,7 @@ def uravnilovka(per=0.5, tag=None, data=None):
                 all_pops = province.find_all(pop_type)
                 for pop in all_pops:
                     savings.append(pop["money"])
-    savings = formulas.divide(savings)
+    savings = formulas.divide(savings, func)
     ind = 0
     states = data[tag].find_all("state")
     for state in states:

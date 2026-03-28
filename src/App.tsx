@@ -71,6 +71,29 @@ export default function App() {
     document.body.setAttribute("data-theme", theme)
   }, [theme])
 
+  const [csvLoading, setCsvLoading] = useState(false)
+
+  async function handleExportCsv() {
+    let path: string | null = null
+    if (window.__TAURI_INTERNALS__) {
+      const { open } = await import("@tauri-apps/plugin-dialog")
+      path = await open({ directory: true, multiple: false }) as string | null
+      if (!path) return
+      path = path + "\\"
+    } else {
+      path = prompt("Папка для сохранения CSV (например C:\\stats\\):")
+      if (!path) return
+    }
+    setCsvLoading(true)
+    try {
+      await apiFetch(`/csv_load?path=${encodeURIComponent(path)}`, { method: "POST" })
+      alert("CSV сохранён в " + path)
+    } catch (e: any) {
+      alert("Ошибка: " + e.message)
+    }
+    setCsvLoading(false)
+  }
+
   function toggleTheme() {
     setTheme(prev => prev === "victorian" ? "classic" : "victorian")
   }
@@ -299,6 +322,17 @@ export default function App() {
                   title={ascending ? "По возрастанию" : "По убыванию"}>
                   {ascending ? "↑" : "↓"}
                 </button>
+                {saveLoaded && (
+                <button
+                  className="btn-export"
+                  onClick={handleExportCsv}
+                  disabled={csvLoading}
+                  title="Экспорт в CSV"
+                  style={{ width: "100%", marginTop: 0, fontSize: 10, letterSpacing: 1 }}
+                >
+                  {csvLoading ? "..." : "↓ CSV"}
+                </button>
+              )}
               </div>
             </>
           )}

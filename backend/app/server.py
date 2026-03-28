@@ -8,6 +8,8 @@ import formulas
 from sort_functions import safe_sort
 from flags_convert import convert_files
 from datetime import datetime
+import pandas as pd
+import os
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
@@ -55,6 +57,7 @@ def load_save(body: LoadRequest):
     # C:/Users  /User/Documents/parser/vic2-save/backend/test_data/Dinney2004_01_01.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/Dinney2005_08_29.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2
+    # C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER_TEST.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1880.v2
     # C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1892.v2
     logic.world_goods_price = data["worldmarket"]["price_pool"]
@@ -282,6 +285,152 @@ def get_progression(tag1: str, tag2: str):
     answer["date_to_gdp_compare"] = gdp_date
     answer["date_to_pop_compare"] = pop_date
     return answer
+
+
+@app.post(
+    "/csv_load",
+    tags=["Экспорт файлов"],
+    summary="Экспорт в csv",
+    description="И так ясно",
+    )
+def get_csv(path: str):
+    to_csv = []
+    data = cache[-1]
+    logic.world_goods_price = data["worldmarket"]["price_pool"]
+    countries = [
+        str(k)
+        for k in data.keys()
+        if len(str(k)) == 3
+        and str(k).isalpha()
+        and str(k).isupper()
+        and logic.country_exists(tag=k, data=data)
+    ]
+    countries.sort(key=lambda x: logic.getGDP(x, data), reverse=True)
+    for tag in countries:
+        gdp = logic.getGDP(tag, data)
+        pop = logic.get_population(tag, data)
+        gdp_per_capita = logic.get_GDP_per_capita(tag, data)
+        money_activity = logic.get_money_activity(tag, data)
+        comp = logic.get_Consumption_economy(tag, data)
+        ind = logic.indPower(tag, data)
+        jini = logic.real_gini(tag, data)
+        suppl = logic.getSupply(tag, data)
+        empl_fab = logic.get_employed_fabric(tag, data)
+        unemploy_fab = logic.fabric_uneployement(tag, data) 
+        empl_rgo = logic.get_rgo_employed(tag, data)
+        unemploy_rgo = logic.rgo_uneployement(tag, data)
+        avg_salary = logic.get_avg_salary(tag, data)
+        avg_salary_cap = logic.get_avg_capilatils_salary(tag, data)
+        all_empl = logic.get_all_employed(tag, data)
+        lit = logic.get_literacy(tag, data)
+        diver = logic.get_diversification_ind(tag, data)
+        mil = logic.get_army_budget(tag, data)
+        mil_in = logic.army_innovation(tag, data)
+        nav = logic.get_naval_budget(tag, data)
+        nav_in = logic.naval_innovation(tag, data)
+        money = logic.get_country_savings(tag, data)
+        gold = logic.get_gold_mining(tag, data)
+        conc = logic.get_concentrate_economy(tag, data)
+        subs = logic.get_subside_cost(tag, data)
+        subs_ind = logic.get_subside_ind(tag, data)
+        profit = logic.get_avg_income_per_fab(tag, data)
+        profitability = logic.avg_rentability(tag, data)
+        all_work_places = logic.get_all_work_places(tag, data)
+        regs = logic.get_country_size(tag, data)
+        gdp_per_regs = logic.gdp_per_reg(tag, data)
+        pop_per_regs = logic.population_per_reg(tag, data)
+        gov_type = logic.get_gov_type(tag, data)
+        money_mass = logic.get_money_mass(tag, data)
+        avg_savings = logic.get_avg_pop_savings(tag, data)
+        bank = logic.get_bank_savings(tag, data)
+        to_csv.append(
+            [
+                tag,
+                gdp,
+                pop,
+                gdp_per_capita,
+                money_activity,
+                comp,
+                ind,
+                subs,
+                subs_ind,
+                profit,
+                profitability,
+                jini,
+                suppl,
+                empl_fab,
+                unemploy_fab,
+                empl_rgo,
+                unemploy_rgo,
+                avg_salary,
+                avg_salary_cap,
+                all_empl,
+                all_work_places,
+                lit,
+                diver,
+                mil,
+                mil_in,
+                nav,
+                nav_in,
+                money,
+                gold,
+                conc,
+                regs,
+                gdp_per_regs,
+                pop_per_regs,
+                gov_type,
+                money_mass,
+                avg_savings,
+                bank,
+            ]
+        )
+
+    df = pd.DataFrame(
+    to_csv,
+    columns=[
+        "Страна",
+        "ВВП",
+        "Население",
+        "ВВП на душу населения",
+        "Скорость обращения накоплений(x100)",
+        "Промежуточное потребление",
+        "Доля промышленности",
+        "Стоимость гос. субсидий",
+        "Доля субсируемых предприятий (%)",
+        "Средняя доходность предприятия",
+        "Средняя рентабельность предприятия (%)",
+        "Индекс Джини",
+        "Валовый выпуск",
+        "Занятость на фабриках",
+        "Безработица на заводах",
+        "Средняя занятость добывающего сектора",
+        "Безработица на добывающем секторе",
+        "Средняя з/п рабочего на фабрике",
+        "Средний доход капиталиста",
+        "Общее число рабочего населения",
+        "Количество свободных рабочих мест на фабриках",
+        "Грамотность",
+        "Диверсифицированность экономики",
+        "Наземный бюджет",
+        "Иновационность армии",
+        "Морской бюджет",
+        "Иновационность флота",
+        "Золотой запас",
+        "Золотодобыча",
+        "Доля ввп в 4-x крупнейших регионах",
+        "Размер страны в регионах",
+        "Экономическая плотность (ввп на регион)",
+        "Плотность населения (население на регион)",
+        "Тип правления",
+        "Общая денежная масса",
+        "Средние сбережения населения",
+        "Запасы гос.банка",
+        ],
+    )
+    if not os.path.isdir(path):
+        os.mkdir(path)
+    df.to_csv(path + "economy_stats.csv", index=False)
+    return "OK"
 
 
 if __name__ == "__main__":

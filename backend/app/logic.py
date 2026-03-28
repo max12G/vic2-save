@@ -206,9 +206,9 @@ def get_concentrate_economy(tag, data=None):
         return 0
     states = list(data[tag].find_all("state"))
     top = min(len(states), 4)
-    slov = get_gdp_per_reg(tag)
+    slov = get_gdp_per_reg(tag, data)
     vals = list(slov.values())
-    gdp = getGDP(tag)
+    gdp = getGDP(tag, data)
     if gdp == 0:
         return 0
     return min(round(sum(vals[: top + 1]) / gdp, 3), 1)
