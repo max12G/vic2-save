@@ -1,15 +1,7 @@
 import pyradox
 import formulas
-from pyradox.datatype import time as pyradox_time
 import sys
 import re
-import pandas as pd
-import time
-import tqdm
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-from get_fabric_req import stats
 from parties import *
 import math
 
@@ -83,7 +75,6 @@ def parse_victoria2_save(file_path):
 
 def load_red_save(file_path, save_data: pyradox.Tree):
     with open(file_path, "w", encoding="CP1251") as f:
-
         done = save_data.prettyprint()
         fixed_file = re.sub(r"(\d+)\.(?!\d)", r"\1.0", done)
         f.write(fixed_file.replace(" = ", "="))
@@ -92,7 +83,7 @@ def load_red_save(file_path, save_data: pyradox.Tree):
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
     data = parse_victoria2_save(
-        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2"
+        r"C:\Users\User\Documents\Paradox Interactive\Victoria II\save games\GER1905.v2"
     )
     save_data = data
     countries = [
@@ -111,5 +102,6 @@ if __name__ == "__main__":
         r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER_TEST.v2",
         save_data,
     )
+
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

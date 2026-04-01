@@ -4,7 +4,6 @@ import re
 import pandas as pd
 import time
 import tqdm
-import os
 import backend.app.logic as logic
 
 sys.setrecursionlimit(1000)

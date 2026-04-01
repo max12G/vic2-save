@@ -1,7 +1,5 @@
 from pyradox import txt as pyradox_txt
-from pyradox.datatype import time as pyradox_time
 import os
-import sys
 
 
 def parse_victoria2_file(file_path):

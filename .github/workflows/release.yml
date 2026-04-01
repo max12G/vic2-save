@@ -16,7 +16,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with: 
-          python-version: '3.11'
+          python-version: '3.14'
       
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -66,16 +66,10 @@ jobs:
         run: |
           npm install
           npm run tauri build
-      - name: Build Changelog
-        id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload installer
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          body: ${{ steps.build_changelog.outputs.changelog }}
           files: |
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
