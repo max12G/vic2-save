@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vic2_save"
+version = "0.1.1"
+dependencies = [
+    "altgraph",
+    "annotated-doc",
+    "annotated-types",
+    "anyio",
+    "argcomplete",
+    "black",
+    "certifi",
+    "charset-normalizer",
+    "click",
+    "colorama",
+    "contourpy",
+    "cycler",
+    "fastapi",
+    "flake8",
+    "fonttools",
+    "h11",
+    "idna",
+    "iniconfig",
+    "kiwisolver",
+    "matplotlib",
+    "mccabe",
+    "mypy-extensions",
+    "numpy",
+    "packaging",
+    "pandas",
+    "pathspec",
+    "pefile",
+    "pillow",
+    "platformdirs",
+    "pluggy",
+    "pycodestyle",
+    "pydantic",
+    "pydantic-core",
+    "pyflakes",
+    "pygments",
+    "pyinstaller",
+    "pyinstaller-hooks-contrib",
+    "pyparsing",
+    "pyradox-txt-parser",
+    "pytest",
+    "python-dateutil",
+    "pytokens",
+    "pywin32-ctypes",
+    "requests",
+    "ruff",
+    "setuptools",
+    "six",
+    "starlette",
+    "tqdm",
+    "typing-extensions",
+    "typing-inspection",
+    "tzdata",
+    "urllib3",
+    "userpath",
+    "uvicorn",
+    "watchdog"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend", "backend.*"] 

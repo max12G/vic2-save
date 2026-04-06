@@ -1,4 +1,4 @@
-import logic
+import backend.app.logic as logic
 
 SORT_FUNCS = {
     "gdp": logic.getGDP,

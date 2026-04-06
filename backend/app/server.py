@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import re
 from pyradox import txt as pyradox_txt
-import logic
-import formulas
-from sort_functions import safe_sort
-from flags_convert import convert_files
+
+from backend.app import logic
+from backend.app import formulas
+from backend.app.sort_functions import safe_sort
+from backend.app.flags_convert import convert_files
+
 from datetime import datetime
 import pandas as pd
 import os
@@ -46,8 +48,8 @@ def load_save(body: LoadRequest):
     global cache, country_stats
     logic.countries = []
     country_stats = {}
-    path = body.path
-    data = parse_victoria2_save(path[-1])
+    path = body.path[-1]
+    data = parse_victoria2_save(path)
     if data is None:
         return "Ошибка парсинга файла"
     country_stats[data["date"]] = {}

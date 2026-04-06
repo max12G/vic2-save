@@ -1,8 +1,8 @@
 import pyradox
-import formulas
+import backend.app.formulas as formulas
 import sys
 import re
-from parties import *
+from backend.app.parties import *
 import math
 
 

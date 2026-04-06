@@ -2,8 +2,8 @@ import pyradox
 import sys
 import os
 import numpy as np
-from get_fabric_req import stats
-from parties import *
+from backend.app.get_fabric_req import stats
+from backend.app.parties import *
 
 countries = []
 

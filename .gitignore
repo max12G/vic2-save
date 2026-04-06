@@ -31,6 +31,8 @@ backend/test_data/GER_TEST.v2
 *.csv
 backend/data/flags/
 
+model/data
+
 
 /backend/app/build/
 src-tauri/binaries/server-x86_64-pc-windows-msvc.exe
