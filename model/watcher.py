@@ -11,14 +11,13 @@ target_file = "autosave.v2"
 class CheckSavegame(FileSystemEventHandler):
     def __init__(self):
         self.last_update = 0
-        self.interval = 20
+        self.interval = 0.1
     def on_modified(self, event):
         if not event.is_directory and os.path.basename(event.src_path) == target_file:
             current_time = time.time()
             if current_time - self.last_update < self.interval:
                 return
             self.last_update = current_time
-            time.sleep(5)
             print(f"Found changes at {time.ctime()}, start update")
             dataset.update_dataset(str(os.path.join(folder_path, target_file)))
 
