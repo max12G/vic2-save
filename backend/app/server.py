@@ -111,7 +111,7 @@ def get_mod_flags(src: str = ""):
     summary="Получить базовые статы стран",
     description="Ну возвращает словарь",
 )
-def get_stats(tag: str, data=None):
+def get_stats(tag: str, data=None, dataset: bool = False):
     global cache, country_stats
     if data is None:
         data = cache[-1]
@@ -157,6 +157,11 @@ def get_stats(tag: str, data=None):
             "most_popular_party": logic.get_ruling_patry(tag, data=data),
             "flag_name": logic.get_flag_name(tag, data=data),
         }
+        if dataset:
+            taxes = logic.get_tax(tag, data=data)
+            country["war_status"] = logic.get_country_war_status(tag, data=data)
+            country.update(taxes)
+
         country_stats[date][tag] = country
         if len(country_stats[date].keys()) > 5:
             t = list(country_stats[date].keys())[0]

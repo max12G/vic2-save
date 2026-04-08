@@ -19,15 +19,16 @@ def update_dataset(path):
         dummy = LoadRequest(path=[path])
         load_save(dummy)
         tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
+        #tags = ["CHI", "NET", "BEL", "BRA", "SPA"]
         date = cache[-1]["date"]
         if date == PREV_DATE:
             return
         for tag in tags:
-            stats = get_stats(tag)
+            stats = get_stats(tag, dataset=True)
             df = pd.DataFrame([stats])
             df.insert(0, "date", date)
-            df = df.drop(["gdp_per_cap", "consuption", "supply", "gdp_per_reg", "goverement", "most_popular_party", "flag_name"], axis=1)
-            data_path = DATASET_PATH + f"/{tag}.csv"
+            #df = df.drop(["gdp_per_cap", "consuption", "supply", "gdp_per_reg", "goverement", "most_popular_party", "flag_name"], axis=1)
+            data_path = DATASET_PATH + f"/{tag}_2.csv"
             if not os.path.isfile(data_path):
                 df.to_csv(data_path, index=False)
             else:
@@ -46,7 +47,8 @@ def normalize_dataset(df):
         "fabric_unemployement", "rgo_employement", "all_employemenent",
         "all_free_work_places", "fabric_worker_salary", "capitalist_salary",
         "literacy", "military_budget", "naval_budget", "army_innov",
-        "naval_innov", "country_size", "population_per_reg", "gdp_per_reg"
+        "naval_innov", "country_size", "population_per_reg", "gdp_per_reg", 
+        "war_status", "rich_tax", "middle_tax", "poor_tax",
     ]
     
     categorical_cols = ["goverement", "most_popular_party", "flag_name"]
@@ -83,8 +85,9 @@ def normalize_dataset(df):
 
 if __name__ == "__main__":
     tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
+    #tags = ["CHI", "NET", "BEL", "BRA", "SPA"]
     for tag in tags:
-        path = "data/" + str(tag) + ".csv"
+        path = "data/" + str(tag) + "_2.csv"
         df = pd.read_csv(path)
         df = normalize_dataset(df)
-        df.to_csv(f"data/{tag}.csv", index=False)
+        df.to_csv(f"data/{tag}_2.csv", index=False)
