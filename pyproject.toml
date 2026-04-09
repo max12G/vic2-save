@@ -29,6 +29,7 @@ dev = [
     "pyinstaller",
     "watchdog",
 
+    "numpy",
     "ipython",
     "ipykernel"
 ]
@@ -37,7 +38,6 @@ ml = [
     "torchaudio==2.11.0+cu126",
     "torchvision==0.26.0+cu126",
 
-    "numpy",
     "pandas",
     "matplotlib",
     "sympy"
