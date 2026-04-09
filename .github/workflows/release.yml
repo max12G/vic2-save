@@ -18,6 +18,16 @@ jobs:
         with: 
           python-version: '3.14'
       
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Instal Deps        
+        run: |
+          uv sync --group dev 
+      
       - name: Setup Node
         uses: actions/setup-node@v4
         with: 
@@ -34,8 +44,7 @@ jobs:
       - name: Run Tests
         run: |
           cd backend
-          pip install -r requirements.txt
-          pytest tests/test.py
+          uv run pytest tests/test.py
         
       - name: Build Python server
         run: |

@@ -5,64 +5,52 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vic2_save"
 version = "0.1.1"
+requires-python = ">=3.11,<3.14"
 dependencies = [
-    "altgraph",
-    "annotated-doc",
-    "annotated-types",
-    "anyio",
-    "argcomplete",
-    "black",
-    "certifi",
-    "charset-normalizer",
-    "click",
-    "colorama",
-    "contourpy",
-    "cycler",
     "fastapi",
-    "flake8",
-    "fonttools",
-    "h11",
-    "idna",
-    "iniconfig",
-    "kiwisolver",
-    "matplotlib",
-    "mccabe",
-    "mypy-extensions",
-    "numpy",
-    "packaging",
-    "pandas",
-    "pathspec",
-    "pefile",
-    "pillow",
-    "platformdirs",
-    "pluggy",
-    "pycodestyle",
-    "pydantic",
-    "pydantic-core",
-    "pyflakes",
-    "pygments",
-    "pyinstaller",
-    "pyinstaller-hooks-contrib",
-    "pyparsing",
-    "pyradox-txt-parser",
-    "pytest",
-    "python-dateutil",
-    "pytokens",
-    "pywin32-ctypes",
-    "requests",
-    "ruff",
-    "setuptools",
-    "six",
-    "starlette",
-    "tqdm",
-    "typing-extensions",
-    "typing-inspection",
-    "tzdata",
-    "urllib3",
-    "userpath",
     "uvicorn",
-    "watchdog"
+    "pydantic",
+    "requests",
+
+    "tqdm",
+    "argcomplete",
+    "userpath",
+
+    "pyradox-txt-parser",
 ]
+
+[dependency-groups]
+dev = [
+    "black",
+    "ruff",
+    "flake8",
+    "pytest",
+    "pyinstaller",
+    "watchdog",
+
+    "ipython",
+    "ipykernel"
+]
+ml = [
+    "torch==2.11.0+cu126",
+    "torchaudio==2.11.0+cu126",
+    "torchvision==0.26.0+cu126",
+
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "sympy"
+]   
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchaudio = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
 
 [tool.setuptools.packages.find]
 where = ["."]

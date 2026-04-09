@@ -13,8 +13,13 @@ DATASET_PATH = f"model/data"
 PREV_DATE = -1
 
 
+
+def get_n():
+    return 3
+
 def update_dataset(path):
     global PREV_DATE
+    n = get_n()
     try:
         dummy = LoadRequest(path=[path])
         load_save(dummy)
@@ -28,7 +33,7 @@ def update_dataset(path):
             df = pd.DataFrame([stats])
             df.insert(0, "date", date)
             #df = df.drop(["gdp_per_cap", "consuption", "supply", "gdp_per_reg", "goverement", "most_popular_party", "flag_name"], axis=1)
-            data_path = DATASET_PATH + f"/{tag}_2.csv"
+            data_path = DATASET_PATH + f"/{tag}_{n}.csv"
             if not os.path.isfile(data_path):
                 df.to_csv(data_path, index=False)
             else:
@@ -86,8 +91,9 @@ def normalize_dataset(df):
 if __name__ == "__main__":
     tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
     #tags = ["CHI", "NET", "BEL", "BRA", "SPA"]
+    n = get_n()
     for tag in tags:
-        path = "data/" + str(tag) + "_2.csv"
+        path = f"data/{tag}_{n}.csv"
         df = pd.read_csv(path)
         df = normalize_dataset(df)
-        df.to_csv(f"data/{tag}_2.csv", index=False)
+        df.to_csv(f"data/{tag}_{n}.csv", index=False)

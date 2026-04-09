@@ -194,6 +194,17 @@ def get_gdp_per_reg(tag, data=None):
     return gdp_per_reg
 
 
+def get_fabric_count(tag, data=None):
+
+    if tag not in data:
+        return 0
+    states = data[tag].find_all("state")
+    total = 0
+    for state in states:
+        total += len(list(state.find_all("state_buildings")))
+            
+    return total
+
 def get_concentrate_economy(tag, data=None):
     if tag not in data:
         return 0
@@ -1604,7 +1615,7 @@ def load_red_save(file_path, save_data):
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
     data = parse_victoria2_save(
-        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1860.v2"
+        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1903.v2"
     )
     save_data = data
     save_data["player"] = "ENG"
@@ -1622,6 +1633,8 @@ if __name__ == "__main__":
     ]
     country_parties = prepare_paries(countries)
     world_goods_price = data["worldmarket"]["price_pool"]
-    print(get_tax("RUS", data))
+    print(get_fabric_count("RUS", data))
+    print(get_fabric_count("USA", data))
+    print(get_fabric_count("GER", data))
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))
