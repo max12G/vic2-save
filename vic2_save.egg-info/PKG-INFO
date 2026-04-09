@@ -10,3 +10,4 @@ Requires-Dist: tqdm
 Requires-Dist: argcomplete
 Requires-Dist: userpath
 Requires-Dist: pyradox-txt-parser
+Requires-Dist: Pillow

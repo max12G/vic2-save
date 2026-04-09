@@ -17,6 +17,7 @@ dependencies = [
     "userpath",
 
     "pyradox-txt-parser",
+    "Pillow",
 ]
 
 [dependency-groups]

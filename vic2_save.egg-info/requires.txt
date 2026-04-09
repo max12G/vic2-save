@@ -6,3 +6,4 @@ tqdm
 argcomplete
 userpath
 pyradox-txt-parser
+Pillow
