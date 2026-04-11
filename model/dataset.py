@@ -15,7 +15,7 @@ PREV_DATE = -1
 
 
 def get_n():
-    return 5
+    return 2
 
 def update_dataset(path):
     global PREV_DATE
@@ -23,8 +23,8 @@ def update_dataset(path):
     try:
         dummy = LoadRequest(path=[path])
         load_save(dummy)
-        tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
-        #tags = ["CHI", "NET", "BEL", "BRA", "SPA"]
+        #tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
+        tags = ["CHI", "NET", "BEL", "BRZ", "SPA"]
         date = cache[-1]["date"]
         if date == PREV_DATE:
             return
@@ -89,8 +89,8 @@ def normalize_dataset(df):
 
 
 if __name__ == "__main__":
-    tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
-    #tags = ["CHI", "NET", "BEL", "BRA", "SPA"]
+    #tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
+    tags = ["CHI", "NET", "BEL", "BRZ", "SPA"]
     n = get_n()
     for tag in tags:
         path = f"data/{tag}_{n}.csv"

@@ -66,6 +66,7 @@ jobs:
             --hidden-import=get_fabric_req `
             --hidden-import=flags_convert `
             --hidden-import=sort_functions `
+            --noconsole `
             server.py
             cd ..
             cd ..
