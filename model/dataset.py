@@ -15,7 +15,7 @@ PREV_DATE = -1
 
 
 def get_n():
-    return 2
+    return 3
 
 def update_dataset(path):
     global PREV_DATE

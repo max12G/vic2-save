@@ -1586,6 +1586,18 @@ def get_flag_name(tag, data):
     return tag + name
 
 
+def get_goods_prices(data):
+    worldmarket = data["worldmarket"]
+    current = worldmarket["price_pool"]
+    res = []
+    res.append(current)
+    k = 20
+    for prev in data.find_all("price_history"):
+        res.append(prev)
+    return res
+
+
+
 def get_progression(start, end, date1, date2):
     date1 = list(map(int, date1.split(".")))
     date2 = list(map(int, date2.split(".")))
@@ -1633,8 +1645,7 @@ if __name__ == "__main__":
     ]
     country_parties = prepare_paries(countries)
     world_goods_price = data["worldmarket"]["price_pool"]
-    print(get_fabric_count("RUS", data))
-    print(get_fabric_count("USA", data))
-    print(get_fabric_count("GER", data))
+    for i in get_goods_prices(data):
+        print(i["lumber"])
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))
