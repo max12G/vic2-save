@@ -20,6 +20,7 @@ class CheckSavegame(FileSystemEventHandler):
             self.last_update = current_time
             print(f"Found changes at {time.ctime()}, start update")
             dataset.update_dataset(str(os.path.join(folder_path, target_file)))
+            print(f"Done updating at {time.ctime()}")
 
 
 event_handler = CheckSavegame()

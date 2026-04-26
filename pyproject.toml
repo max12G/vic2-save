@@ -55,4 +55,4 @@ torchvision = { index = "pytorch-cu126" }
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["backend", "backend.*"] 
+include = ["backend", "backend.*", "model", "model.*"] 

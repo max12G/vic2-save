@@ -1090,6 +1090,94 @@ def get_all_work_places(tag, data=None):
     return new_places - all_work_pops
 
 
+def prom_innovation(tag, data=None):
+    if tag not in data:
+        return 0
+    tech_list = [
+        "water_wheel_power",
+        "practical_steam_engine",
+        "high_n_low_pressure_steam_engines",
+        "steam_turbine",
+        "combustion_engine",
+        "electrical_power_generation",
+        "publishing_industry",
+        "mechanical_production",
+        "interchangeable_parts",
+        "semi_automatization",
+        "assembly_line",
+        "shift_work",
+        "mechanized_mining",
+        "clean_coal",
+        "cheap_iron",
+        "cheap_steel",
+        "advanced_metallurgy",
+        "electric_furnace",
+        "experimental_railroad",
+        "early_railroad",
+        "iron_railroad",
+        "steel_railroad",
+        "integral_rail_system",
+        "limited_access_roads",
+        "basic_chemistry",
+        "medicine",
+        "inorganic_chemistry",
+        "organic_chemistry",
+        "electricity",
+        "synthetic_polymers"
+    ]
+    country = data[tag]
+    techs = country["technology"]
+    count = 0
+    for tech in techs:
+        if tech in tech_list:
+            count += 1
+    return count
+
+
+def commercial_innovation(tag, data=None):
+    if tag not in data:
+        return 0
+    tech_list = [
+        "private_banks",
+        "stock_exchange",
+        "business_banks",
+        "investment_banks",
+        "bank_inspection_board",
+        "mutual_funds",
+        "no_standard",
+        "ad_hoc_money_bill_printing",
+        "private_bank_money_bill_printing",
+        "central_bank_money_bill_printing",
+        "modern_central_bank_system",
+        "market_determined_exchange_rates",
+        "early_classical_theory_and_critique",
+        "late_classical_theory",
+        "collectivist_theory",
+        "the_historical_theory",
+        "neoclassical_theory",
+        "keynesian_economics",
+        "freedom_of_trade",
+        "market_structure",
+        "business_regulations",
+        "market_regulations",
+        "economic_responsibility",
+        "government_interventionism",
+        "guild_based_production",
+        "organized_factories",
+        "scientific_management",
+        "time_saving_measures",
+        "management_strategy",
+        "organizational_development"
+        ]
+    country = data[tag]
+    techs = country["technology"]
+    count = 0
+    for tech in techs:
+        if tech in tech_list:
+            count += 1
+    return count
+
+
 def army_innovation(tag, data=None):
     if tag not in data:
         return 0
@@ -1625,27 +1713,7 @@ def load_red_save(file_path, save_data):
 
 
 if __name__ == "__main__":
-    sys.setrecursionlimit(10000)
-    data = parse_victoria2_save(
-        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/GER1903.v2"
-    )
-    save_data = data
-    save_data["player"] = "ENG"
-    load_red_save(
-        r"C:/Users/User/Documents/parser/vic2-save/backend/test_data/siiiey1918_01_11.v2",
-        save_data,
-    )
-    countries = [
-        str(k)
-        for k in data.keys()
-        if len(str(k)) == 3
-        and str(k).isalpha()
-        and str(k).isupper()
-        and country_exists(tag=k, data=data)
-    ]
-    country_parties = prepare_paries(countries)
-    world_goods_price = data["worldmarket"]["price_pool"]
-    for i in get_goods_prices(data):
-        print(i["lumber"])
+    data = {}
+    pass
     # print(get_economy_producing_podrobno("JAP"))
     # print(get_diversification_ind("USA"))

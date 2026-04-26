@@ -7,24 +7,18 @@ from pydantic import BaseModel
 from backend.app.server import load_save, get_stats, LoadRequest, cache
 import backend.app.logic as logic
 
+from shared.dataset_params import tags, n
+
 
 
 DATASET_PATH = f"model/data"
 PREV_DATE = -1
 
-
-
-def get_n():
-    return 3
-
 def update_dataset(path):
     global PREV_DATE
-    n = get_n()
     try:
         dummy = LoadRequest(path=[path])
         load_save(dummy)
-        #tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
-        tags = ["CHI", "NET", "BEL", "BRZ", "SPA"]
         date = cache[-1]["date"]
         if date == PREV_DATE:
             return
@@ -32,7 +26,6 @@ def update_dataset(path):
             stats = get_stats(tag, dataset=True)
             df = pd.DataFrame([stats])
             df.insert(0, "date", date)
-            #df = df.drop(["gdp_per_cap", "consuption", "supply", "gdp_per_reg", "goverement", "most_popular_party", "flag_name"], axis=1)
             data_path = DATASET_PATH + f"/{tag}_{n}.csv"
             if not os.path.isfile(data_path):
                 df.to_csv(data_path, index=False)
@@ -72,7 +65,7 @@ def normalize_dataset(df):
             else:
                 new_row["date"] = f"{year1}.7.1"
             for j in numeric_cols:
-                new_row[j] = round((df[j].iloc[i] + df[j].iloc[i + 1]) / 2, 3)
+                new_row[j] = round((int(df[j].iloc[i]) + int(df[j].iloc[i + 1])) / 2, 3)
             for j in categorical_cols:
                 new_row[j] = df[j].iloc[i]
             df.loc[idx + 0.5] = new_row
@@ -89,11 +82,9 @@ def normalize_dataset(df):
 
 
 if __name__ == "__main__":
-    #tags = ["USA", "RUS", "ENG", "FRA", "AUS"]
-    tags = ["CHI", "NET", "BEL", "BRZ", "SPA"]
-    n = get_n()
     for tag in tags:
         path = f"data/{tag}_{n}.csv"
         df = pd.read_csv(path)
+        print(path)
         df = normalize_dataset(df)
         df.to_csv(f"data/{tag}_{n}.csv", index=False)

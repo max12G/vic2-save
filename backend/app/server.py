@@ -160,6 +160,8 @@ def get_stats(tag: str, data=None, dataset: bool = False):
         if dataset:
             taxes = logic.get_tax(tag, data=data)
             country["war_status"] = logic.get_country_war_status(tag, data=data)
+            country["prom_innov"] = logic.prom_innovation(tag, data=data)
+            country["comm_innov"] = logic.commercial_innovation(tag, data=data)
             country.update(taxes)
 
         country_stats[date][tag] = country
