@@ -39,7 +39,7 @@ def update_dataset(path):
 def normalize_dataset(df):
     numeric_cols = [
         "gdp", "population", "gdp_per_cap", "money_activity", "consuption", "supply",
-        "industrial_level", "subside_percent", "rentability", "subside_pct",
+        "industrial_level", "subside_percent", "rentability",
         "diversification", "gold_income", "country_savings", "bank_savings",
         "population_savings", "money_mass", "gini", "fabric_employee",
         "fabric_unemployement", "rgo_employement", "all_employemenent",
@@ -84,7 +84,10 @@ def normalize_dataset(df):
 if __name__ == "__main__":
     for tag in tags:
         path = f"data/{tag}_{n}.csv"
-        df = pd.read_csv(path)
-        print(path)
-        df = normalize_dataset(df)
-        df.to_csv(f"data/{tag}_{n}.csv", index=False)
+        try:
+            df = pd.read_csv(path)
+            print(path)
+            df = normalize_dataset(df)
+            df.to_csv(f"data/{tag}_{n}.csv", index=False)
+        except Exception as e:
+            print(f"Ошибка с {tag}: {e}")
