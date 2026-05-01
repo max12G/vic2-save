@@ -130,7 +130,6 @@ def get_stats(tag: str, data=None, dataset: bool = False):
             "industrial_level": logic.indPower(tag, data=data),
             "subside_percent": logic.get_subside_ind(tag, data=data),
             "rentability": logic.avg_rentability(tag, data=data),
-            "subside_pct": logic.get_subside_ind(tag, data=data),
             "diversification": logic.get_diversification_ind(tag, data=data),
             "gold_income": logic.get_gold_mining(tag, data=data),
             "country_savings": logic.get_country_savings(tag, data=data),
