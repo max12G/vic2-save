@@ -38,6 +38,7 @@ model/backup
 model/catboost_info/
 model/LSTM.ipynb
 model/experiments.ipynb
+model/dataset.db
 
 
 /backend/app/build/

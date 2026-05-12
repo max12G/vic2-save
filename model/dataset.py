@@ -71,6 +71,19 @@ def normalize_dataset(df):
             df.loc[idx + 0.5] = new_row
             df = df.sort_index().reset_index(drop=True)
             i += 2
+        elif int(year1) + 2 == int(year2):
+            new_year = f"{int(year1) + 1}"
+            new_row = {}
+            idx = i
+            new_row["date"] = f"{new_year}.1.1"
+            for j in numeric_cols:
+                new_row[j] = round((int(df[j].iloc[i]) + int(df[j].iloc[i + 1])) / 2, 3)
+            for j in categorical_cols:
+                new_row[j] = df[j].iloc[i]
+            df.loc[idx + 0.5] = new_row
+            df = df.sort_index().reset_index(drop=True)
+            i += 2
+
         else:
             i += 1
     
