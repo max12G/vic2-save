@@ -11,3 +11,4 @@ Requires-Dist: argcomplete
 Requires-Dist: userpath
 Requires-Dist: pyradox-txt-parser
 Requires-Dist: Pillow
+Requires-Dist: numpy>=2.4.4

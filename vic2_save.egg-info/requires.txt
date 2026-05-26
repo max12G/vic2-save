@@ -7,3 +7,4 @@ argcomplete
 userpath
 pyradox-txt-parser
 Pillow
+numpy>=2.4.4

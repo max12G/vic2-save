@@ -39,6 +39,8 @@ model/catboost_info/
 model/LSTM.ipynb
 model/experiments.ipynb
 model/dataset.db
+model/mlruns/
+model/mlflow.db
 
 
 /backend/app/build/
@@ -67,6 +69,7 @@ backend/build/server/
 
 
 *.local
-vic2_save.egg-info/SOURCES.txt
-vic2_save.egg-info/SOURCES.txt
-vic2_save.egg-info/top_level.txt
+vic2_save.egg-info/
+vic2_save.egg-info/PKG-INFO
+vic2_save.egg-info/dependency_links.txt
+vic2_save.egg-info/requires.txt

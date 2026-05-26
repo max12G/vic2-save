@@ -16,6 +16,7 @@ dependencies = [
     "userpath",
     "pyradox-txt-parser",
     "Pillow",
+    "numpy>=2.4.4",
 ]
 
 [dependency-groups]
@@ -26,11 +27,10 @@ dev = [
     "pytest",
     "pyinstaller",
     "watchdog",
-
     "numpy",
     "pandas",
     "ipython",
-    "ipykernel"
+    "ipykernel",
 ]
 ml = [
     "torch==2.11.0+cu126",
@@ -41,6 +41,7 @@ ml = [
     "catboost>=1.2.10",
     "mpmath>=1.3.0",
     "shap>=0.51.0",
+    "mlflow>=3.12.0",
 ]   
 
 [[tool.uv.index]]
